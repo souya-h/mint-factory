@@ -74,10 +74,11 @@ async function runProject(project) {
 
   if (project.status === 'paused' || ps.killed) return finish();
 
-  // Engagement on our posts. With the X API it is read once a day; in manual mode (no API)
+  // Engagement on our posts. With the X API it is read every 3 days (reads are billed per post); in manual mode (no API)
   // it comes from manual-engagement.json, which a person fills in from X's own analytics.
   const manual = manualEngagement[project.slug];
-  if (xEnabled() && ps.engagementDay !== todayStr && ps.tweetIds?.length) {
+  const daysSinceRead = ps.engagementDay ? (Date.parse(todayStr) - Date.parse(ps.engagementDay)) / 86_400_000 : Infinity;
+  if (xEnabled() && daysSinceRead >= 3 && ps.tweetIds?.length) {
     const e = await engagement(ps.tweetIds);
     if (e !== null) ps.engagement = e;
     ps.engagementDay = todayStr;
