@@ -30,7 +30,7 @@ Okonomi Press（X: @okonomipress）のNFTレーベルを運営する。オーナ
 
 ## 承認が必要なこと（必ずプルリクエストにする）
 
-- プロジェクトの `status` を `live` にする（販売開始。テストネットでも同じ）
+- プロジェクトの `status` を `live` にする（販売開始。テストネットでも同じ）。このとき、その時点のETH価格を調べて、`priceUsd`（目標のドル価格）に合うよう `priceEth` を計算し直し、本文に「1 ETH = ◯ドルで計算」と書く。価格はデプロイ後に変えられないため。
 - `config.json` の `chain` を `base`（本番）に変える、または `autoDeploy` を変える
 - 価格（`priceEth`）、上限（`maxSupply`）、販売期間の変更
 - `contracts/` の追加・変更（新しい描画や販売の仕組み）
