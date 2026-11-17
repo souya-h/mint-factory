@@ -54,6 +54,7 @@
 import {
   createPublicClient, createWalletClient, custom, http, parseEther, formatEther, isAddress, keccak256, toHex,
 } from 'https://esm.sh/viem@__VIEM__';
+import { mainnet, base } from 'https://esm.sh/viem@__VIEM__/chains';
 
 __STATS_JS__
 
@@ -105,6 +106,38 @@ async function previewAddress(address) {
   return data;
 }
 
+// perSeed: a transaction hash on Ethereum or Base. The contract cannot check that it exists,
+// so the page does, and shows when it happened.
+const isTxHash = (v) => /^0x[0-9a-fA-F]{64}$/.test(v);
+let shownTx = null;
+async function lookupTx(hash) {
+  for (const c of [mainnet, base]) {
+    try {
+      const client = createPublicClient({ chain: c, transport: http() });
+      const tx = await client.getTransaction({ hash });
+      const block = await client.getBlock({ blockNumber: tx.blockNumber });
+      return { chain: c.name, date: new Date(Number(block.timestamp) * 1000).toISOString().slice(0, 10) };
+    } catch { /* try the next chain */ }
+  }
+  return null;
+}
+async function previewTx(hash) {
+  if (!isTxHash(hash)) return status('Paste a transaction hash: 0x followed by 64 characters.');
+  await draw(BigInt(hash), BigInt(hash));
+  shownTx = null;
+  history.replaceState(null, '', `?tx=${hash}`);
+  status('Looking up the transaction…');
+  const found = await lookupTx(hash);
+  if (!found) return status('That transaction was not found on Ethereum or Base, so it cannot be minted.');
+  let note = `${found.chain} transaction, ${found.date}.`;
+  if (edition && (await pub.readContract({ ...edition, functionName: 'seedUsed', args: [BigInt(hash)] }))) {
+    note += ' Already claimed by someone else.';
+  } else {
+    shownTx = hash;
+  }
+  status(note);
+}
+
 async function preview() {
   try {
     if (mode === 'perDay') {
@@ -116,6 +149,16 @@ async function preview() {
         status("Today's pattern is fixed onchain by the first mint of the day. This is a stand-in.");
       }
       await draw(seed, day);
+    } else if (mode === 'perSeed') {
+      const tx = new URLSearchParams(location.search).get('tx');
+      if (tx) {
+        $('address').value = tx;
+        await previewTx(tx);
+      } else {
+        const h = keccak256(toHex(String(Math.random())));
+        await draw(BigInt(h), BigInt(h));
+        status('A random hash. Paste a real transaction to see its poem.');
+      }
     } else if (mode === 'perMinter') {
       const a = new URLSearchParams(location.search).get('a');
       if (a) {
@@ -173,6 +216,10 @@ async function mint() {
       await wallet.addChain({ chain });
     }
     let data = 0n;
+    if (mode === 'perSeed') {
+      if (!shownTx) return status('Preview a real, unclaimed transaction first.');
+      data = BigInt(shownTx);
+    }
     if (mode === 'perMinter') {
       if (await pub.readContract({ ...edition, functionName: 'minted', args: [account] })) {
         return status('This wallet has already minted.');
@@ -210,7 +257,7 @@ function save() {
 }
 
 function share() {
-  const text = mode === 'perMinter' && shown ? `My ${CFG.project.name}` : CFG.project.name;
+  const text = (mode === 'perMinter' && shown) || (mode === 'perSeed' && shownTx) ? `My ${CFG.project.name}` : CFG.project.name;
   const mention = CFG.handle ? ` via @${CFG.handle}` : '';
   const url = `https://x.com/intent/post?text=${encodeURIComponent(text + mention)}&url=${encodeURIComponent(location.href)}`;
   window.open(url, '_blank', 'noopener');
@@ -218,6 +265,13 @@ function share() {
 
 $('name').textContent = CFG.project.name;
 $('desc').textContent = CFG.project.description;
+if (mode === 'perSeed') {
+  $('addressRow').hidden = false;
+  $('address').placeholder = '0x… transaction hash';
+  $('address').setAttribute('aria-label', 'Transaction hash');
+  $('previewBtn').onclick = () => previewTx($('address').value.trim()).catch((e) => status(`Preview failed: ${e.message}`));
+  $('address').onkeydown = (e) => e.key === 'Enter' && $('previewBtn').click();
+}
 if (mode === 'perMinter') {
   $('addressRow').hidden = false;
   $('previewBtn').onclick = () => previewAddress($('address').value.trim()).catch((e) => status(`Preview failed: ${e.message}`));

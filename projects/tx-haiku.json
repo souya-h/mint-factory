@@ -1,0 +1,41 @@
+{
+  "slug": "tx-haiku",
+  "name": "Tx Haiku",
+  "symbol": "TXHAIKU",
+  "description": "Any transaction on Ethereum or Base, read as a 5-7-5 poem. One poem per transaction, first come first served.",
+  "renderer": "HashHaiku",
+  "seedMode": "perSeed",
+  "priceUsd": 5,
+  "priceEth": "0.0027",
+  "priceStepUsd": 1,
+  "priceStepEth": "0.00053",
+  "stepEvery": 100,
+  "maxSupply": 0,
+  "durationDays": 0,
+  "status": "paused",
+  "sampleSeeds": [],
+  "post": {
+    "slotsUTC": [
+      3,
+      16
+    ],
+    "templates": [
+      "Every transaction has one poem, and only one person can own it.\n\nTx Haiku: paste a hash, claim its 5-7-5. Link in bio.",
+      "Your first transaction. A payment you'll never forget. The day you bought that NFT.\n\nEach one is a haiku. Tx Haiku.",
+      "Tx Haiku: {supply} transactions claimed. {price} ETH, rising in {nextStep} mints."
+    ],
+    "teaserTemplates": [
+      "Every transaction has one poem, and only one person will be able to own it.\n\nTx Haiku: preview any hash free, link in bio.",
+      "Which transaction would you claim as a poem?\n\nTx Haiku. Mint opens soon."
+    ]
+  },
+  "teaser": {
+    "afterPosts": 6,
+    "promoteEngagement": 30,
+    "killEngagement": 5
+  },
+  "kill": {
+    "afterHours": 72,
+    "minMints": 20
+  }
+}

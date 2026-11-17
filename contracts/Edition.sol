@@ -15,10 +15,12 @@ contract Edition is ERC721 {
 
     /// PerMint: fresh random seed per token. PerMinter: seed = minter address, one per wallet.
     /// PerDay: every token minted on the same UTC day shares that day's seed.
+    /// PerSeed: the minter supplies the seed in `data` (e.g. a transaction hash); each seed can be minted once.
     enum SeedMode {
         PerMint,
         PerMinter,
-        PerDay
+        PerDay,
+        PerSeed
     }
 
     struct Config {
@@ -43,6 +45,7 @@ contract Edition is ERC721 {
     error AlreadyMinted();
     error NotOwner();
     error WrongMode();
+    error SeedTaken();
     error WithdrawFailed();
 
     event Minted(address indexed to, uint256 indexed tokenId, uint256 seed, uint256 data);
@@ -64,6 +67,7 @@ contract Edition is ERC721 {
     mapping(uint256 => uint256) public dataOf;
     mapping(address => bool) public minted;
     mapping(uint256 => uint256) public daySeed;
+    mapping(uint256 => bool) public seedUsed;
 
     constructor(Config memory c) ERC721(c.name, c.symbol) {
         renderer = IRenderer(c.renderer);
@@ -90,6 +94,10 @@ contract Edition is ERC721 {
             if (minted[msg.sender]) revert AlreadyMinted();
             minted[msg.sender] = true;
             seed = uint160(msg.sender);
+        } else if (seedMode == SeedMode.PerSeed) {
+            if (data == 0 || seedUsed[data]) revert SeedTaken();
+            seedUsed[data] = true;
+            seed = data;
         } else if (seedMode == SeedMode.PerDay) {
             data = block.timestamp / 1 days;
             seed = _fixDaySeed(data);

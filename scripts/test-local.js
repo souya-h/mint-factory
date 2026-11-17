@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import assert from 'node:assert/strict';
 import { spawn, execFileSync } from 'node:child_process';
-import { createTestClient, http, parseEther, publicActions, walletActions } from 'viem';
+import { createTestClient, http, parseEther, publicActions, walletActions, keccak256, toHex } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { hardhat } from 'viem/chains';
 
@@ -59,7 +59,7 @@ for (const project of loadProjects()) {
   const edition = { address: dep.edition, abi };
   await assert.rejects(mint(dep.edition, 0n, price - 1n), 'wrong price must revert');
 
-  const data = project.stats ? packStats({ months: [3, 0, 12, 40, 7, 0, 22, 95, 31, 4, 18, 9], activeDays: 141 }) : 0n;
+  const data = project.seedMode === 'perSeed' ? BigInt(keccak256(toHex('some tx'))) : project.stats ? packStats({ months: [3, 0, 12, 40, 7, 0, 22, 95, 31, 4, 18, 9], activeDays: 141 }) : 0n;
   await mint(dep.edition, data, price);
   assert.equal(await client.readContract({ ...edition, functionName: 'totalSupply' }), 1n);
   assert.equal(await client.getBalance({ address: dep.edition }), price);
@@ -75,6 +75,11 @@ for (const project of loadProjects()) {
   if (project.seedMode === 'perMinter') {
     await assert.rejects(mint(dep.edition, data, price), 'second mint from the same wallet must revert');
     if (project.stats) assert.ok(svg.includes('TX 241') && svg.includes('ACTIVE DAYS 141'), 'stats not drawn');
+  }
+  if (project.seedMode === 'perSeed') {
+    await assert.rejects(mint(dep.edition, data, await client.readContract({ ...edition, functionName: 'currentPrice' })), 'a seed can be minted once');
+    await assert.rejects(mint(dep.edition, 0n, await client.readContract({ ...edition, functionName: 'currentPrice' })), 'zero seed must revert');
+    assert.ok(svg.includes('TX HAIKU'), 'tx label not drawn');
   }
   if (project.seedMode === 'perDay') {
     const day = BigInt((await client.getBlock()).timestamp / 86400n);
@@ -127,7 +132,8 @@ const runBot = () => execFileSync('node', ['bot/run.js'], { cwd: ROOT, env: proc
 fs.rmSync(path.join(out, 'dryrun'), { recursive: true, force: true });
 runBot();
 const first = fs.readdirSync(path.join(out, 'dryrun')).filter((f) => f.endsWith('.txt')).length;
-assert.ok(first >= loadProjects().length, 'bot did not post');
+const active = loadProjects().filter((p) => p.status !== 'paused');
+assert.ok(first >= active.length, 'bot did not post');
 runBot();
 assert.equal(fs.readdirSync(path.join(out, 'dryrun')).filter((f) => f.endsWith('.txt')).length, first, 'bot posted twice');
 
@@ -143,7 +149,7 @@ for (const d of Object.values(deployments)) d.deployedAt -= 80 * 3600;
 fs.writeFileSync(dl, JSON.stringify(deployments));
 runBot();
 const state = JSON.parse(fs.readFileSync(stateFile, 'utf8'));
-assert.ok(Object.values(state.projects).every((p) => p.killed), 'kill rule did not fire');
+assert.ok(active.every((p) => state.projects[p.slug]?.killed), 'kill rule did not fire');
 console.log('ok  bot (post, no double post, kill rule)');
 
 console.log('all checks passed');

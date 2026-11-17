@@ -3,7 +3,7 @@ pragma solidity ^0.8.24;
 
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
-/// @notice A 5-7-5 poem read out of a wallet address. seed = address, data unused.
+/// @notice A 5-7-5 poem read out of a wallet address (data = 0) or a transaction hash (data = seed = the hash).
 /// Every word list has 16 entries with a fixed syllable count, so any address yields 5-7-5:
 ///   [ADJ 2] [NOUN 3]
 ///   one [NOUN 2] [VERB 1] [PREP 1] the [NOUN 1]
@@ -30,7 +30,7 @@ contract HashHaiku {
     string private constant KIGO =
         unicode"初雪|夕立|蝉時雨|春一番|月見|霜柱|朧月|星月夜|花冷え|木枯らし|秋の暮|薄氷|若葉|稲妻|雪解け|蛍";
 
-    function render(uint256 seed, uint256) external pure returns (string memory) {
+    function render(uint256 seed, uint256 data) external pure returns (string memory) {
         uint256 h = uint256(keccak256(abi.encode(seed)));
         string memory n1 = _pick(NOUN1, h >> 20);
         // The last line gets a different single-syllable noun from the middle line.
@@ -42,7 +42,8 @@ contract HashHaiku {
         );
         string memory l3 = string.concat(_pick(ADV2, h >> 24), " ", n1b, " ", _pick(VERB2, h >> 28));
 
-        string memory addr = Strings.toHexString(address(uint160(seed)));
+        string memory label = data == 0 ? _short(Strings.toHexString(address(uint160(seed)))) : _short(Strings.toHexString(data, 32));
+        string memory title = data == 0 ? "HASH HAIKU" : "TX HAIKU";
         // DejaVu Sans Mono advance is 0.602em; at 18px that is about 10.84px per character.
         // The longest possible line is 36 characters (about 390px), so every poem fits.
         uint256 cursorX = 48 + (bytes(l3).length * 1084) / 100 + 2;
@@ -55,8 +56,8 @@ contract HashHaiku {
             '<text x="48" y="236">', l1, '</text><text x="48" y="282">', l2, '</text><text x="48" y="328">', l3,
             '</text></g><rect x="', cursorX.toString(), '" y="313" width="10" height="19" fill="#E8202A"/>',
             '<g font-family="DejaVu Sans Mono,monospace" font-size="15" fill="#6E6C68"><text x="48" y="500">',
-            _short(addr),
-            '</text><text x="432" y="500" text-anchor="end">HASH HAIKU</text></g></svg>'
+            label,
+            '</text><text x="432" y="500" text-anchor="end">', title, '</text></g></svg>'
         );
     }
 
@@ -87,7 +88,7 @@ contract HashHaiku {
         out[6] = ".";
         out[7] = ".";
         out[8] = ".";
-        for (uint256 i = 0; i < 4; i++) out[9 + i] = b[38 + i];
+        for (uint256 i = 0; i < 4; i++) out[9 + i] = b[b.length - 4 + i];
         return string(out);
     }
 }
