@@ -1,7 +1,7 @@
 name: bot
 on:
   schedule:
-    - cron: "17 * * * *"
+    - cron: "17 * * * *"  # hourly; posting hours are set per project in projects/*.json (slotsUTC)
   workflow_dispatch:
 permissions:
   contents: write

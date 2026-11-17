@@ -38,8 +38,23 @@ async function send(wallet, request) {
   if (receipt.status !== 'success') throw new Error(`transaction reverted: ${request.functionName}`);
 }
 
+/**
+ * post.slotsUTC: fixed hours (UTC) to post at, e.g. [1, 14]. A slot is used if the bot runs within
+ * 3 hours after it, so a late or skipped hourly run does not lose the post.
+ * Without slots, falls back to post.everyHours (default 24) since the last post.
+ */
+function postDue(postCfg, lastPostAt) {
+  const slots = process.env.IGNORE_SLOTS ? null : postCfg?.slotsUTC; // tests run at arbitrary hours
+  if (!slots?.length) return now - lastPostAt >= (postCfg?.everyHours || 24) * 3600 - 600;
+  const dayStart = Math.floor(now / 86400) * 86400;
+  const times = [...slots.map((h) => dayStart - 86400 + h * 3600), ...slots.map((h) => dayStart + h * 3600)];
+  const latest = Math.max(...times.filter((t) => t <= now));
+  return now - latest <= 3 * 3600 && lastPostAt < latest;
+}
+
 function fill(template, project, supply) {
   return template
+    .replaceAll('{hoursLeft}', String(24 - new Date(now * 1000).getUTCHours()))
     .replaceAll('{date}', todayStr)
     .replaceAll('{supply}', String(supply))
     .replaceAll('{name}', project.name)
@@ -132,12 +147,10 @@ async function runProject(project) {
     }
   }
 
-  const every = (project.post?.everyHours || 24) * 3600;
   // Before the sale opens, use the teaser wording so posts never promise a mint that is not live.
   const pool = !dep && project.post?.teaserTemplates?.length ? project.post.teaserTemplates : project.post?.templates || [];
   const templates = pool.filter((t) => supply > 0n || !t.includes('{supply}'));
-  // 10 minutes of slack so an hourly run that starts slightly early still posts.
-  if (templates.length && canPost() && now - (ps.lastPostAt || 0) >= every - 600) {
+  if (templates.length && canPost() && postDue(project.post, ps.lastPostAt || 0)) {
     await publish(project, ps, dep, fill(templates[(ps.postCount || 0) % templates.length], project, supply));
   }
   finish();

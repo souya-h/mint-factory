@@ -10,15 +10,18 @@
   "durationDays": 0,
   "status": "teaser",
   "post": {
-    "everyHours": 24,
     "templates": [
-      "Daily Block {date}\n\nOne pattern per day. 24 hours to mint, then it never comes back.",
-      "{date}\n\nToday's block is live. Tomorrow it is gone.",
+      "Daily Block {date}\n\nOne pattern per day. 24 hours to mint, then it never comes back. 本日分",
+      "{hoursLeft} hours left for Daily Block {date}.\n\nTomorrow there will be a different one.",
       "Daily Block {date}. Minted so far: {supply}."
     ],
     "teaserTemplates": [
       "Daily Block {date}\n\nOne pattern per day, fixed by the chain. Mint opens soon.",
       "{date}\n\nToday's block. Tomorrow there will be a different one."
+    ],
+    "slotsUTC": [
+      1,
+      14
     ]
   },
   "teaser": {

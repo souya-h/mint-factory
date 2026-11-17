@@ -11,7 +11,6 @@
   "status": "teaser",
   "sampleAddresses": [],
   "post": {
-    "everyHours": 12,
     "templates": [
       "What did your wallet do in 2026?\n\nOnchain 2026: twelve months of transactions as one card. Preview yours free, link in bio.",
       "Every wallet draws a different year.\n\nOnchain 2026. One per wallet.",
@@ -20,6 +19,10 @@
     "teaserTemplates": [
       "What did your wallet do in 2026?\n\nOnchain 2026: twelve months of transactions as one card. Preview yours free, link in bio.",
       "Every wallet draws a different year.\n\nOnchain 2026. Preview free now, mint opens soon."
+    ],
+    "slotsUTC": [
+      2,
+      15
     ]
   },
   "teaser": {

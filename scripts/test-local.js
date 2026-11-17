@@ -12,7 +12,7 @@ const ROOT = path.resolve(import.meta.dirname, '..');
 const KEY = '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80'; // public hardhat test key
 const BUYER = '0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d';
 const PAYOUT = '0x000000000000000000000000000000000000bEEF';
-Object.assign(process.env, { CHAIN: 'local', DEPLOYER_PRIVATE_KEY: KEY, PAYOUT_ADDRESS: PAYOUT, DRY_RUN: '1', RPC_URL: 'http://127.0.0.1:8545' });
+Object.assign(process.env, { CHAIN: 'local', DEPLOYER_PRIVATE_KEY: KEY, PAYOUT_ADDRESS: PAYOUT, DRY_RUN: '1', IGNORE_SLOTS: '1', RPC_URL: 'http://127.0.0.1:8545' });
 
 // Work on copies so the test never dirties the real state files.
 const tracked = ['state.json', 'metrics/history.csv', 'metrics/REPORT.md'];
