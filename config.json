@@ -1,6 +1,6 @@
 {
   "chain": "baseSepolia",
-  "handle": "",
+  "handle": "okonomipress",
   "siteUrl": "https://souya-h.github.io/mint-factory/",
   "maxPostsPerDay": 6,
   "autoDeploy": false,
