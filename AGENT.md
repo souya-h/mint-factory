@@ -15,16 +15,17 @@ Okonomi Press（X: @okonomipress）のNFTレーベルを運営する。オーナ
    - `manual-engagement.json`（オーナーが報告した反応の数）
    - `queue/`（未投稿の素材）
    - 開いているプルリクエスト（`gh api repos/souya-h/mint-factory/pulls`）。マージ・クローズされたものも直近分を確認し、却下された提案は繰り返さない。
-3. 片付け：`queue/` の素材のうち、作成から3日以上経ったものは削除する（古い日付の日替わりブロックを投稿しないため）。
-4. 投稿文の改善：反応の数字を見て、`projects/*.json` の `post.templates` と `post.teaserTemplates` を書き換える。
+3. ボットの稼働確認：`gh api "repos/souya-h/mint-factory/actions/workflows/bot.yml/runs?per_page=5"` で直近の実行を見る。3時間以上動いていない、または失敗が続いている場合は、`gh api repos/souya-h/mint-factory/actions/workflows/bot.yml/dispatches -X POST -f ref=main` で手動実行し、日報に書く。失敗の原因がコードにあれば、修正をプルリクエストで出す。
+4. 片付け：`queue/` の素材のうち、作成から3日以上経ったものは削除する（古い日付の日替わりブロックを投稿しないため）。
+5. 投稿文の改善：反応の数字を見て、`projects/*.json` の `post.templates` と `post.teaserTemplates` を書き換える。
    - 英語を基本に、日本語を一言添える（例：「本日分」）。280文字以内。
    - リンクを入れない（リンクはプロフィールに置く）。
    - トレンドの話題に便乗しない。
    - 販売が始まっていないプロジェクトで「ミントできる」と書かない。
    - 成績の良かった文面は残し、悪いものを入れ替える。一度に全部変えない。
-5. 新しい案：週に1つまで。既存の描画コントラクト（`contracts/` にあるもの）を使い、`status: "teaser"` で `projects/` に追加する。これは費用がかからないので、承認なしで直接 main に push してよい。
-6. 承認が必要な変更は、main に直接 push せず、ブランチを作ってプルリクエストを出す（下記）。
-7. 最後に、オーナー向けの日報を出力する（下記）。
+6. 新しい案：週に1つまで。既存の描画コントラクト（`contracts/` にあるもの）を使い、`status: "teaser"` で `projects/` に追加する。これは費用がかからないので、承認なしで直接 main に push してよい。
+7. 承認が必要な変更は、main に直接 push せず、ブランチを作ってプルリクエストを出す（下記）。
+8. 最後に、オーナー向けの日報を出力する（下記）。
 
 ## 承認が必要なこと（必ずプルリクエストにする）
 
