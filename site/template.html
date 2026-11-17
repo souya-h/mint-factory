@@ -93,7 +93,7 @@ async function draw(seed, data) {
 
 async function previewAddress(address) {
   if (!isAddress(address)) return status('That is not a wallet address.');
-  status(`Reading ${CFG.statsYear} activity…`);
+  status(`Reading ${CFG.statsYear} activity… (busy wallets can take up to 30 seconds)`);
   const stats = await fetchStats(address, CFG.statsHosts, CFG.statsYear);
   const data = packStats(stats);
   await draw(BigInt(address), data);
