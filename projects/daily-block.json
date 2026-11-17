@@ -15,8 +15,19 @@
       "Daily Block {date}\n\nOne pattern per day. 24 hours to mint, then it never comes back.",
       "{date}\n\nToday's block is live. Tomorrow it is gone.",
       "Daily Block {date}. Minted so far: {supply}."
+    ],
+    "teaserTemplates": [
+      "Daily Block {date}\n\nOne pattern per day, fixed by the chain. Mint opens soon.",
+      "{date}\n\nToday's block. Tomorrow there will be a different one."
     ]
   },
-  "teaser": { "afterPosts": 5, "promoteEngagement": 30, "killEngagement": 5 },
-  "kill": { "afterHours": 72, "minMints": 20 }
+  "teaser": {
+    "afterPosts": 5,
+    "promoteEngagement": 30,
+    "killEngagement": 5
+  },
+  "kill": {
+    "afterHours": 72,
+    "minMints": 20
+  }
 }

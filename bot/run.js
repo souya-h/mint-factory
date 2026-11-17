@@ -132,7 +132,9 @@ async function runProject(project) {
   }
 
   const every = (project.post?.everyHours || 24) * 3600;
-  const templates = (project.post?.templates || []).filter((t) => supply > 0n || !t.includes('{supply}'));
+  // Before the sale opens, use the teaser wording so posts never promise a mint that is not live.
+  const pool = !dep && project.post?.teaserTemplates?.length ? project.post.teaserTemplates : project.post?.templates || [];
+  const templates = pool.filter((t) => supply > 0n || !t.includes('{supply}'));
   // 10 minutes of slack so an hourly run that starts slightly early still posts.
   if (templates.length && canPost() && now - (ps.lastPostAt || 0) >= every - 600) {
     await publish(project, ps, dep, fill(templates[(ps.postCount || 0) % templates.length], project, supply));
