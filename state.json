@@ -7,7 +7,8 @@
       "tweetIds": [
         "manual-2026-11-17-19-daily-block-8239"
       ],
-      "engagement": 0
+      "engagement": 0,
+      "engagementDay": "2026-11-17"
     },
     "onchain-2026": {
       "postCount": 1,
@@ -16,6 +17,21 @@
       "tweetIds": [
         "manual-2026-11-17-19-onchain-2026-265"
       ],
+      "engagement": 0,
+      "engagementDay": "2026-11-17"
+    },
+    "hash-haiku": {
+      "postCount": 0,
+      "lastPostAt": 0,
+      "lastSupply": 0,
+      "tweetIds": [],
+      "engagement": 0
+    },
+    "tx-haiku": {
+      "postCount": 0,
+      "lastPostAt": 0,
+      "lastSupply": 0,
+      "tweetIds": [],
       "engagement": 0
     }
   },
