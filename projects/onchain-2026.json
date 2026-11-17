@@ -1,0 +1,23 @@
+{
+  "slug": "onchain-2026",
+  "name": "Onchain 2026",
+  "symbol": "OC26",
+  "description": "Your wallet's 2026 as one card: twelve months of transactions, drawn onchain. One per wallet.",
+  "renderer": "Wrapped",
+  "seedMode": "perMinter",
+  "priceEth": "0.0008",
+  "maxSupply": 0,
+  "durationDays": 45,
+  "status": "teaser",
+  "sampleAddresses": [],
+  "post": {
+    "everyHours": 12,
+    "templates": [
+      "What did your wallet do in 2026?\n\nOnchain 2026: twelve months of transactions as one card. Preview yours free, link in bio.",
+      "Every wallet draws a different year.\n\nOnchain 2026. One per wallet.",
+      "Onchain 2026: {supply} wallets have minted their year."
+    ]
+  },
+  "teaser": { "afterPosts": 6, "promoteEngagement": 30, "killEngagement": 5 },
+  "kill": { "afterHours": 72, "minMints": 20 }
+}

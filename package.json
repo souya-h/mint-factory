@@ -1,0 +1,25 @@
+{
+  "name": "mint-factory",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "wallet:new": "node scripts/new-wallet.js",
+    "preview": "node scripts/preview.js",
+    "deploy": "node scripts/deploy.js",
+    "site": "node scripts/build-site.js",
+    "bot": "node bot/run.js",
+    "bot:dry": "DRY_RUN=1 node bot/run.js",
+    "test": "node scripts/test-local.js"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.4.0",
+    "@resvg/resvg-js": "^2.6.2",
+    "solc": "0.8.28",
+    "twitter-api-v2": "^1.31.0",
+    "viem": "^2.57.20"
+  },
+  "devDependencies": {
+    "hardhat": "^2.26.0"
+  }
+}

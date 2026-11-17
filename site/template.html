@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>__TITLE__</title>
+<meta name="description" content="__DESC__">
+<meta property="og:title" content="__TITLE__">
+<meta property="og:description" content="__DESC__">
+<meta name="twitter:card" content="summary">
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #0c0d10; color: #e8e6e1; font: 16px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  main { max-width: 480px; margin: 0 auto; padding: 32px 20px 64px; }
+  h1 { font-size: 28px; margin: 0 0 8px; font-weight: 600; }
+  p { margin: 0 0 16px; color: #a9a69f; }
+  .art { width: 100%; aspect-ratio: 8 / 9; background: #15171c; display: block; margin: 20px 0; }
+  .row { display: flex; gap: 8px; margin: 0 0 12px; }
+  input { flex: 1; min-width: 0; padding: 12px; background: #15171c; border: 1px solid #2c2f38; color: inherit; font: inherit; border-radius: 6px; }
+  button { padding: 12px 16px; border: 1px solid #2c2f38; background: #15171c; color: inherit; font: inherit; border-radius: 6px; cursor: pointer; }
+  button.primary { background: #e8e6e1; color: #0c0d10; border-color: #e8e6e1; width: 100%; font-weight: 600; }
+  button:disabled { opacity: .45; cursor: default; }
+  button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid #7fb3ff; outline-offset: 2px; }
+  .meta { display: flex; justify-content: space-between; color: #a9a69f; margin: 0 0 12px; }
+  #status { min-height: 24px; margin: 12px 0; color: #a9a69f; overflow-wrap: anywhere; }
+  a { color: #7fb3ff; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <h1 id="name"></h1>
+  <p id="desc"></p>
+
+  <div class="row" id="addressRow" hidden>
+    <input id="address" placeholder="0x… wallet address" aria-label="Wallet address" autocomplete="off" spellcheck="false">
+    <button id="previewBtn">Preview</button>
+  </div>
+
+  <img class="art" id="art" alt="Artwork preview">
+
+  <div class="meta"><span id="price"></span><span id="supply"></span></div>
+  <button class="primary" id="mintBtn" disabled>Mint opens soon</button>
+  <div id="status" role="status"></div>
+  <div class="row">
+    <button id="againBtn" hidden>Another example</button>
+    <button id="saveBtn">Save image</button>
+    <button id="shareBtn">Share on X</button>
+  </div>
+</main>
+
+<script type="module">
+import {
+  createPublicClient, createWalletClient, custom, http, parseEther, isAddress, keccak256, toHex,
+} from 'https://esm.sh/viem@__VIEM__';
+
+__STATS_JS__
+
+const CFG = __CFG__;
+const $ = (id) => document.getElementById(id);
+const mode = CFG.project.seedMode;
+const chain = {
+  id: CFG.chain.id,
+  name: CFG.chain.name,
+  nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+  rpcUrls: { default: { http: [CFG.chain.rpc] } },
+};
+const pub = createPublicClient({ chain, transport: http(CFG.chain.rpc) });
+const edition = CFG.deployment && { address: CFG.deployment.edition, abi: CFG.editionAbi };
+let shown = null; // address currently drawn (perMinter)
+
+function status(text, link) {
+  const el = $('status');
+  el.textContent = text;
+  if (link) {
+    const a = document.createElement('a');
+    a.href = link.href;
+    a.textContent = link.text;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    el.append(' ', a);
+  }
+}
+
+async function draw(seed, data) {
+  const call = { abi: CFG.rendererAbi, functionName: 'render', args: [seed, data] };
+  const svg = CFG.deployment
+    ? await pub.readContract({ ...call, address: CFG.deployment.renderer })
+    : await pub.readContract({ ...call, code: CFG.rendererBytecode });
+  $('art').src = 'data:image/svg+xml;base64,' + btoa(svg);
+}
+
+async function previewAddress(address) {
+  if (!isAddress(address)) return status('That is not a wallet address.');
+  status(`Reading ${CFG.statsYear} activity…`);
+  const stats = await fetchStats(address, CFG.statsHosts, CFG.statsYear);
+  const data = packStats(stats);
+  await draw(BigInt(address), data);
+  shown = address;
+  history.replaceState(null, '', `?a=${address}`);
+  status('');
+  return data;
+}
+
+async function preview() {
+  try {
+    if (mode === 'perDay') {
+      const day = BigInt(Math.floor(Date.now() / 86400000));
+      let seed = 0n;
+      if (edition) seed = await pub.readContract({ ...edition, functionName: 'daySeed', args: [day] });
+      if (seed === 0n) {
+        seed = BigInt(keccak256(toHex(`${CFG.project.slug}:${day}`)));
+        status("Today's pattern is fixed onchain by the first mint of the day. This is a stand-in.");
+      }
+      await draw(seed, day);
+    } else if (mode === 'perMinter') {
+      const a = new URLSearchParams(location.search).get('a');
+      if (a) {
+        $('address').value = a;
+        await previewAddress(a);
+      } else {
+        await draw(0n, 0n);
+      }
+    } else {
+      await draw(BigInt(keccak256(toHex(String(Math.random())))), 0n);
+    }
+  } catch (e) {
+    status(`Preview failed: ${e.shortMessage || e.message}`);
+  }
+}
+
+async function refreshSupply() {
+  if (!edition) return;
+  try {
+    const n = await pub.readContract({ ...edition, functionName: 'totalSupply' });
+    $('supply').textContent = `${n} minted`;
+  } catch { /* supply is optional */ }
+}
+
+async function mint() {
+  if (!window.ethereum) return status('No wallet found. Open this page in a wallet app or install a browser wallet.');
+  $('mintBtn').disabled = true;
+  try {
+    const wallet = createWalletClient({ chain, transport: custom(window.ethereum) });
+    const [account] = await wallet.requestAddresses();
+    try {
+      await wallet.switchChain({ id: chain.id });
+    } catch {
+      await wallet.addChain({ chain });
+    }
+    let data = 0n;
+    if (mode === 'perMinter') {
+      if (await pub.readContract({ ...edition, functionName: 'minted', args: [account] })) {
+        return status('This wallet has already minted.');
+      }
+      $('address').value = account;
+      data = await previewAddress(account);
+    }
+    status('Confirm in your wallet…');
+    const hash = await wallet.writeContract({
+      ...edition, account, functionName: 'mint', args: [data], value: parseEther(CFG.project.priceEth),
+    });
+    status('Waiting for confirmation…');
+    await pub.waitForTransactionReceipt({ hash });
+    status('Minted.', CFG.chain.explorer && { href: `${CFG.chain.explorer}/tx/${hash}`, text: 'View transaction' });
+    refreshSupply();
+  } catch (e) {
+    status(`Mint failed: ${e.shortMessage || e.message}`);
+  } finally {
+    $('mintBtn').disabled = false;
+  }
+}
+
+function save() {
+  const img = $('art');
+  const canvas = document.createElement('canvas');
+  canvas.width = 960;
+  canvas.height = 1080;
+  canvas.getContext('2d').drawImage(img, 0, 0, 960, 1080);
+  canvas.toBlob((blob) => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `${CFG.project.slug}.png`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+}
+
+function share() {
+  const text = mode === 'perMinter' && shown ? `My ${CFG.project.name}` : CFG.project.name;
+  const mention = CFG.handle ? ` via @${CFG.handle}` : '';
+  const url = `https://x.com/intent/post?text=${encodeURIComponent(text + mention)}&url=${encodeURIComponent(location.href)}`;
+  window.open(url, '_blank', 'noopener');
+}
+
+$('name').textContent = CFG.project.name;
+$('desc').textContent = CFG.project.description;
+$('price').textContent = `${CFG.project.priceEth} ETH on ${CFG.chain.name}`;
+if (mode === 'perMinter') {
+  $('addressRow').hidden = false;
+  $('previewBtn').onclick = () => previewAddress($('address').value.trim()).catch((e) => status(`Preview failed: ${e.message}`));
+  $('address').onkeydown = (e) => e.key === 'Enter' && $('previewBtn').click();
+}
+if (mode === 'perMint') {
+  $('againBtn').hidden = false;
+  $('againBtn').onclick = preview;
+}
+if (edition) {
+  $('mintBtn').disabled = false;
+  $('mintBtn').textContent = 'Mint';
+  $('mintBtn').onclick = mint;
+}
+$('saveBtn').onclick = save;
+$('shareBtn').onclick = share;
+preview();
+refreshSupply();
+</script>
+</body>
+</html>

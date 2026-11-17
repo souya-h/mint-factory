@@ -1,0 +1,22 @@
+{
+  "slug": "daily-block",
+  "name": "Daily Block",
+  "symbol": "DBLK",
+  "description": "One pattern per day, fixed by the chain. Open for 24 hours, then gone.",
+  "renderer": "DailyBlock",
+  "seedMode": "perDay",
+  "priceEth": "0.0004",
+  "maxSupply": 0,
+  "durationDays": 0,
+  "status": "teaser",
+  "post": {
+    "everyHours": 24,
+    "templates": [
+      "Daily Block {date}\n\nOne pattern per day. 24 hours to mint, then it never comes back.",
+      "{date}\n\nToday's block is live. Tomorrow it is gone.",
+      "Daily Block {date}. Minted so far: {supply}."
+    ]
+  },
+  "teaser": { "afterPosts": 5, "promoteEngagement": 30, "killEngagement": 5 },
+  "kill": { "afterHours": 72, "minMints": 20 }
+}
