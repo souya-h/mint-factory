@@ -1,1 +1,24 @@
-{"projects":{},"day":"","postsToday":0}
+{
+  "projects": {
+    "daily-block": {
+      "postCount": 1,
+      "lastPostAt": 1794943376,
+      "lastSupply": 0,
+      "tweetIds": [
+        "manual-2026-11-17-19-daily-block-8239"
+      ],
+      "engagement": 0
+    },
+    "onchain-2026": {
+      "postCount": 1,
+      "lastPostAt": 1794943376,
+      "lastSupply": 0,
+      "tweetIds": [
+        "manual-2026-11-17-19-onchain-2026-265"
+      ],
+      "engagement": 0
+    }
+  },
+  "day": "2026-11-17",
+  "postsToday": 2
+}
