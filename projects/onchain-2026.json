@@ -33,5 +33,6 @@
   "kill": {
     "afterHours": 72,
     "minMints": 20
-  }
+  },
+  "stats": true
 }

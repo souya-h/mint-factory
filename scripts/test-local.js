@@ -59,7 +59,7 @@ for (const project of loadProjects()) {
   const edition = { address: dep.edition, abi };
   await assert.rejects(mint(dep.edition, 0n, price - 1n), 'wrong price must revert');
 
-  const data = project.seedMode === 'perMinter' ? packStats({ months: [3, 0, 12, 40, 7, 0, 22, 95, 31, 4, 18, 9], activeDays: 141 }) : 0n;
+  const data = project.stats ? packStats({ months: [3, 0, 12, 40, 7, 0, 22, 95, 31, 4, 18, 9], activeDays: 141 }) : 0n;
   await mint(dep.edition, data, price);
   assert.equal(await client.readContract({ ...edition, functionName: 'totalSupply' }), 1n);
   assert.equal(await client.getBalance({ address: dep.edition }), price);
@@ -74,7 +74,7 @@ for (const project of loadProjects()) {
 
   if (project.seedMode === 'perMinter') {
     await assert.rejects(mint(dep.edition, data, price), 'second mint from the same wallet must revert');
-    assert.ok(svg.includes('TX 241') && svg.includes('ACTIVE DAYS 141'), 'stats not drawn');
+    if (project.stats) assert.ok(svg.includes('TX 241') && svg.includes('ACTIVE DAYS 141'), 'stats not drawn');
   }
   if (project.seedMode === 'perDay') {
     const day = BigInt((await client.getBlock()).timestamp / 86400n);

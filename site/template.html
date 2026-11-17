@@ -93,9 +93,11 @@ async function draw(seed, data) {
 
 async function previewAddress(address) {
   if (!isAddress(address)) return status('That is not a wallet address.');
-  status(`Reading ${CFG.statsYear} activity… (busy wallets can take up to 30 seconds)`);
-  const stats = await fetchStats(address, CFG.statsHosts, CFG.statsYear);
-  const data = packStats(stats);
+  let data = 0n;
+  if (CFG.project.stats) {
+    status(`Reading ${CFG.statsYear} activity… (busy wallets can take up to 30 seconds)`);
+    data = packStats(await fetchStats(address, CFG.statsHosts, CFG.statsYear));
+  }
   await draw(BigInt(address), data);
   shown = address;
   history.replaceState(null, '', `?a=${address}`);
@@ -119,8 +121,11 @@ async function preview() {
       if (a) {
         $('address').value = a;
         await previewAddress(a);
-      } else {
+      } else if (CFG.project.stats) {
         await draw(0n, 0n);
+      } else {
+        await draw(BigInt(keccak256(toHex(String(Math.random())))) >> 96n, 0n);
+        status('A random wallet. Enter yours to see your own.');
       }
     } else {
       await draw(BigInt(keccak256(toHex(String(Math.random())))), 0n);

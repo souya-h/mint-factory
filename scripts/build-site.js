@@ -26,7 +26,7 @@ for (const p of loadProjects()) {
   if (p.status === 'paused' || state.projects[p.slug]?.killed) continue;
   const dep = deployments[p.slug] || null;
   const pageCfg = {
-    project: { slug: p.slug, name: p.name, description: p.description, seedMode: p.seedMode, priceEth: p.priceEth },
+    project: { slug: p.slug, name: p.name, description: p.description, seedMode: p.seedMode, priceEth: p.priceEth, stats: Boolean(p.stats) },
     chain: {
       id: chain.id,
       name: chain.name,

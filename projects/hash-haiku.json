@@ -1,0 +1,38 @@
+{
+  "slug": "hash-haiku",
+  "name": "Hash Haiku",
+  "symbol": "HAIKU",
+  "description": "Your wallet address, read as a 5-7-5 poem. Every address has exactly one. One per wallet.",
+  "renderer": "HashHaiku",
+  "seedMode": "perMinter",
+  "stats": false,
+  "priceEth": "0.0005",
+  "maxSupply": 0,
+  "durationDays": 0,
+  "status": "teaser",
+  "sampleAddresses": [],
+  "post": {
+    "slotsUTC": [
+      3,
+      16
+    ],
+    "templates": [
+      "Every wallet has one poem.\n\nHash Haiku: your address, read as 5-7-5. Find yours, link in bio. 俳句",
+      "A haiku from a random wallet.\n\nYours is waiting. Hash Haiku, one per wallet.",
+      "Hash Haiku: {supply} wallets have claimed their poem."
+    ],
+    "teaserTemplates": [
+      "Every wallet has one poem.\n\nHash Haiku: your address, read as 5-7-5. Preview yours free, link in bio. 俳句",
+      "A haiku from a random wallet.\n\nWhat does yours say? Mint opens soon."
+    ]
+  },
+  "teaser": {
+    "afterPosts": 6,
+    "promoteEngagement": 30,
+    "killEngagement": 5
+  },
+  "kill": {
+    "afterHours": 72,
+    "minMints": 20
+  }
+}
