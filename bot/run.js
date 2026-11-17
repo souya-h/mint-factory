@@ -6,7 +6,7 @@ import path from 'node:path';
 import { formatEther, parseEther } from 'viem';
 import { compile } from '../lib/compile.js';
 import {
-  ROOT, loadConfig, loadProjects, loadDeployments, loadState, saveState, publicClient, walletClient,
+  ROOT, loadConfig, loadProjects, loadDeployments, loadState, saveState, publicClient, walletClient, revenueWei,
 } from '../lib/config.js';
 import { deployProject } from '../lib/deploy.js';
 import { renderSvg, svgToPng, sampleInput, today, isoDate } from '../lib/render.js';
@@ -52,8 +52,10 @@ function postDue(postCfg, lastPostAt) {
   return now - latest <= 3 * 3600 && lastPostAt < latest;
 }
 
-function fill(template, project, supply) {
+function fill(template, project, supply, price = 0n) {
   return template
+    .replaceAll('{price}', formatEther(price))
+    .replaceAll('{nextStep}', String(project.stepEvery ? project.stepEvery - (Number(supply) % project.stepEvery) : ''))
     .replaceAll('{hoursLeft}', String(24 - new Date(now * 1000).getUTCHours()))
     .replaceAll('{date}', todayStr)
     .replaceAll('{supply}', String(supply))
@@ -119,6 +121,7 @@ async function runProject(project) {
   }
 
   let supply = 0n;
+  let price = parseEther(project.priceEth);
   if (dep) {
     const edition = { address: dep.edition, abi: editionAbi };
     if (project.seedMode === 'perDay' && wallet) {
@@ -128,7 +131,10 @@ async function runProject(project) {
 
     supply = await client.readContract({ ...edition, functionName: 'totalSupply' });
     row.supply = Number(supply);
-    row.revenue = formatEther(supply * parseEther(project.priceEth));
+    row.revenue = formatEther(
+      revenueWei(supply, parseEther(project.priceEth), parseEther(project.priceStepEth || '0'), project.stepEvery || 0),
+    );
+    price = await client.readContract({ ...edition, functionName: 'currentPrice' });
 
     const balance = await client.getBalance({ address: dep.edition });
     if (wallet && balance > 0n && balance >= parseEther(cfg.withdrawMinEth || '0')) {
@@ -151,7 +157,7 @@ async function runProject(project) {
   const pool = !dep && project.post?.teaserTemplates?.length ? project.post.teaserTemplates : project.post?.templates || [];
   const templates = pool.filter((t) => supply > 0n || !t.includes('{supply}'));
   if (templates.length && canPost() && postDue(project.post, ps.lastPostAt || 0)) {
-    await publish(project, ps, dep, fill(templates[(ps.postCount || 0) % templates.length], project, supply));
+    await publish(project, ps, dep, fill(templates[(ps.postCount || 0) % templates.length], project, supply, price));
   }
   finish();
 }

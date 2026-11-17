@@ -7,6 +7,9 @@
   "seedMode": "perMinter",
   "priceUsd": 5,
   "priceEth": "0.0027",
+  "priceStepUsd": 1,
+  "priceStepEth": "0.00053",
+  "stepEvery": 100,
   "maxSupply": 0,
   "durationDays": 45,
   "status": "teaser",
@@ -15,7 +18,8 @@
     "templates": [
       "What did your wallet do in 2026?\n\nOnchain 2026: twelve months of transactions as one card. Preview yours free, link in bio.",
       "Every wallet draws a different year.\n\nOnchain 2026. One per wallet.",
-      "Onchain 2026: {supply} wallets have minted their year."
+      "Onchain 2026: {supply} wallets have minted their year.",
+      "Onchain 2026: {price} ETH, rising in {nextStep} mints."
     ],
     "teaserTemplates": [
       "What did your wallet do in 2026?\n\nOnchain 2026: twelve months of transactions as one card. Preview yours free, link in bio.",

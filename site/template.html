@@ -52,7 +52,7 @@
 
 <script type="module">
 import {
-  createPublicClient, createWalletClient, custom, http, parseEther, isAddress, keccak256, toHex,
+  createPublicClient, createWalletClient, custom, http, parseEther, formatEther, isAddress, keccak256, toHex,
 } from 'https://esm.sh/viem@__VIEM__';
 
 __STATS_JS__
@@ -135,11 +135,29 @@ async function preview() {
   }
 }
 
+const step = parseEther(CFG.project.priceStepEth);
+const every = CFG.project.stepEvery;
+function priceLabel(p, minted) {
+  let t = `${formatEther(p)} ETH on ${CFG.chain.name}`;
+  if (step > 0n && every > 0) {
+    const left = every - (Number(minted) % every);
+    t += ` · rises to ${formatEther(p + step)} ETH in ${left} mint${left === 1 ? '' : 's'}`;
+  }
+  return t;
+}
+
 async function refreshSupply() {
-  if (!edition) return;
+  if (!edition) {
+    $('price').textContent = priceLabel(parseEther(CFG.project.priceEth), 0);
+    return;
+  }
   try {
-    const n = await pub.readContract({ ...edition, functionName: 'totalSupply' });
+    const [n, p] = await Promise.all([
+      pub.readContract({ ...edition, functionName: 'totalSupply' }),
+      pub.readContract({ ...edition, functionName: 'currentPrice' }),
+    ]);
     $('supply').textContent = `${n} minted`;
+    $('price').textContent = priceLabel(p, n);
   } catch { /* supply is optional */ }
 }
 
@@ -162,10 +180,9 @@ async function mint() {
       $('address').value = account;
       data = await previewAddress(account);
     }
+    const value = await pub.readContract({ ...edition, functionName: 'currentPrice' });
     status('Confirm in your wallet…');
-    const hash = await wallet.writeContract({
-      ...edition, account, functionName: 'mint', args: [data], value: parseEther(CFG.project.priceEth),
-    });
+    const hash = await wallet.writeContract({ ...edition, account, functionName: 'mint', args: [data], value });
     status('Waiting for confirmation…');
     await pub.waitForTransactionReceipt({ hash });
     status('Minted.', CFG.chain.explorer && { href: `${CFG.chain.explorer}/tx/${hash}`, text: 'View transaction' });
@@ -201,7 +218,6 @@ function share() {
 
 $('name').textContent = CFG.project.name;
 $('desc').textContent = CFG.project.description;
-$('price').textContent = `${CFG.project.priceEth} ETH on ${CFG.chain.name}`;
 if (mode === 'perMinter') {
   $('addressRow').hidden = false;
   $('previewBtn').onclick = () => previewAddress($('address').value.trim()).catch((e) => status(`Preview failed: ${e.message}`));

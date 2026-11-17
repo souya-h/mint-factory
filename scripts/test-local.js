@@ -85,6 +85,14 @@ for (const project of loadProjects()) {
     assert.ok(svg.includes(new Date(Number(day) * 86400000).toISOString().slice(0, 10)), 'date not drawn');
   }
 
+  // Stepped price: after `stepEvery` mints the price must rise by exactly one step.
+  if (project.priceStepEth && project.stepEvery) {
+    const step = parseEther(project.priceStepEth);
+    const cur = await client.readContract({ ...edition, functionName: 'currentPrice' });
+    const minted = await client.readContract({ ...edition, functionName: 'totalSupply' });
+    assert.equal(cur, price + step * (minted / BigInt(project.stepEvery)));
+  }
+
   // Anyone can trigger the payout, and it only ever goes to the payout address.
   const paidBefore = await client.getBalance({ address: PAYOUT });
   const held = await client.getBalance({ address: dep.edition });
@@ -92,6 +100,26 @@ for (const project of loadProjects()) {
   await client.waitForTransactionReceipt({ hash });
   assert.equal((await client.getBalance({ address: PAYOUT })) - paidBefore, held);
   console.log(`ok  ${project.slug}`);
+}
+
+// Stepped pricing across a boundary: price rises after every 2 mints, old price is refused.
+{
+  const base = loadProjects().find((p) => p.seedMode === 'perMint') || { ...loadProjects()[0], seedMode: 'perMint' };
+  const proj = { ...base, slug: 'step-test', seedMode: 'perMint', priceEth: '0.001', priceStepEth: '0.0005', stepEvery: 2 };
+  const dep = await deployProject(proj, 'local');
+  const ed = { address: dep.edition, abi };
+  const p0 = parseEther('0.001'), p1 = parseEther('0.0015');
+  await mint(dep.edition, 0n, p0);
+  await mint(dep.edition, 0n, p0);
+  assert.equal(await client.readContract({ ...ed, functionName: 'currentPrice' }), p1);
+  await assert.rejects(mint(dep.edition, 0n, p0), 'old price must be refused after a step');
+  await mint(dep.edition, 0n, p1);
+  const { revenueWei } = await import('../lib/config.js');
+  assert.equal(await client.getBalance({ address: dep.edition }), revenueWei(3, p0, parseEther('0.0005'), 2));
+  const d = loadDeployments('local');
+  delete d['step-test'];
+  fs.writeFileSync(path.join(ROOT, 'deployments', 'local.json'), JSON.stringify(d));
+  console.log('ok  stepped price');
 }
 
 // Bot: first pass posts previews (dry run); a second pass right after must not post again.

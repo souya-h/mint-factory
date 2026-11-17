@@ -15,7 +15,7 @@ const template = fs.readFileSync(path.join(ROOT, 'site', 'template.html'), 'utf8
 const statsJs = fs.readFileSync(path.join(ROOT, 'site', 'stats.js'), 'utf8').replace(/^export /gm, '');
 const viemVersion = require('viem/package.json').version;
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
-const USED = ['mint', 'totalSupply', 'daySeed', 'minted'];
+const USED = ['mint', 'totalSupply', 'daySeed', 'minted', 'currentPrice'];
 
 const dist = path.join(ROOT, 'dist');
 fs.rmSync(dist, { recursive: true, force: true });
@@ -26,7 +26,7 @@ for (const p of loadProjects()) {
   if (p.status === 'paused' || state.projects[p.slug]?.killed) continue;
   const dep = deployments[p.slug] || null;
   const pageCfg = {
-    project: { slug: p.slug, name: p.name, description: p.description, seedMode: p.seedMode, priceEth: p.priceEth, stats: Boolean(p.stats) },
+    project: { slug: p.slug, name: p.name, description: p.description, seedMode: p.seedMode, priceEth: p.priceEth, priceStepEth: p.priceStepEth || '0', stepEvery: p.stepEvery || 0, stats: Boolean(p.stats) },
     chain: {
       id: chain.id,
       name: chain.name,

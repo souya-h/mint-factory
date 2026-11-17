@@ -7,6 +7,9 @@
   "seedMode": "perDay",
   "priceUsd": 1,
   "priceEth": "0.0005",
+  "priceStepUsd": 0.25,
+  "priceStepEth": "0.00013",
+  "stepEvery": 100,
   "maxSupply": 0,
   "durationDays": 0,
   "status": "teaser",
@@ -14,7 +17,8 @@
     "templates": [
       "Daily Block {date}\n\nOne pattern per day. 24 hours to mint, then it never comes back. 本日分",
       "{hoursLeft} hours left for Daily Block {date}.\n\nTomorrow there will be a different one.",
-      "Daily Block {date}. Minted so far: {supply}."
+      "Daily Block {date}. Minted so far: {supply}.",
+      "Daily Block {date}: {price} ETH now. The price goes up in {nextStep} mints."
     ],
     "teaserTemplates": [
       "Daily Block {date}\n\nOne pattern per day, fixed by the chain. Mint opens soon.",

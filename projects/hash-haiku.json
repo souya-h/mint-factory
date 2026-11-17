@@ -8,6 +8,9 @@
   "stats": false,
   "priceUsd": 3,
   "priceEth": "0.0016",
+  "priceStepUsd": 1,
+  "priceStepEth": "0.00053",
+  "stepEvery": 100,
   "maxSupply": 0,
   "durationDays": 0,
   "status": "teaser",
@@ -20,7 +23,8 @@
     "templates": [
       "Every wallet has one poem.\n\nHash Haiku: your address, read as 5-7-5. Find yours, link in bio. 俳句",
       "A haiku from a random wallet.\n\nYours is waiting. Hash Haiku, one per wallet.",
-      "Hash Haiku: {supply} wallets have claimed their poem."
+      "Hash Haiku: {supply} wallets have claimed their poem.",
+      "Hash Haiku is {price} ETH. It goes up in {nextStep} mints. Early poems are the cheapest."
     ],
     "teaserTemplates": [
       "Every wallet has one poem.\n\nHash Haiku: your address, read as 5-7-5. Preview yours free, link in bio. 俳句",

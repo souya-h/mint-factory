@@ -27,7 +27,9 @@ contract Edition is ERC721 {
         string description;
         address renderer;
         address payout;
-        uint256 price;
+        uint256 price; // price of the first mint
+        uint256 priceStep; // added to the price after every `stepEvery` mints (0 = flat price)
+        uint32 stepEvery;
         uint64 startTime;
         uint64 endTime; // 0 = no end
         uint32 maxSupply; // 0 = unlimited
@@ -49,6 +51,8 @@ contract Edition is ERC721 {
     address public immutable payout;
     address public immutable owner;
     uint256 public immutable price;
+    uint256 public immutable priceStep;
+    uint32 public immutable stepEvery;
     uint64 public immutable startTime;
     uint64 public endTime;
     uint32 public immutable maxSupply;
@@ -66,6 +70,8 @@ contract Edition is ERC721 {
         payout = c.payout;
         owner = msg.sender;
         price = c.price;
+        priceStep = c.priceStep;
+        stepEvery = c.stepEvery;
         startTime = c.startTime;
         endTime = c.endTime;
         maxSupply = c.maxSupply;
@@ -77,7 +83,7 @@ contract Edition is ERC721 {
         if (block.timestamp < startTime) revert NotStarted();
         if (endTime != 0 && block.timestamp >= endTime) revert Ended();
         if (maxSupply != 0 && totalSupply >= maxSupply) revert SoldOut();
-        if (msg.value != price) revert WrongPrice();
+        if (msg.value != currentPrice()) revert WrongPrice();
 
         uint256 seed;
         if (seedMode == SeedMode.PerMinter) {
@@ -96,6 +102,12 @@ contract Edition is ERC721 {
         dataOf[id] = data;
         _mint(msg.sender, id);
         emit Minted(msg.sender, id, seed, data);
+    }
+
+    /// @notice Price of the next mint. Starts at `price` and rises by `priceStep` every `stepEvery` mints.
+    function currentPrice() public view returns (uint256) {
+        if (priceStep == 0 || stepEvery == 0) return price;
+        return price + priceStep * (totalSupply / stepEvery);
     }
 
     /// @notice Fixes today's seed without minting (PerDay only). Anyone may call.
