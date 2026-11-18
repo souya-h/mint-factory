@@ -17,5 +17,17 @@
     "project": "hash-haiku",
     "maxPerDay": 15,
     "maxPerRun": 10
+  },
+  "brief": {
+    "hourUTC": 22,
+    "queries": [
+      "\"onchain art\" OR \"generative art\" OR genart",
+      "NFTアート OR ジェネラティブアート OR オンチェーン",
+      "\"Base\" (NFT OR mint) art"
+    ],
+    "maxReads": 30,
+    "minFollowers": 1000,
+    "maxFollowers": 20000,
+    "keep": 5
   }
 }

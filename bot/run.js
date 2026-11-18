@@ -10,7 +10,7 @@ import {
 } from '../lib/config.js';
 import { deployProject } from '../lib/deploy.js';
 import { renderSvg, svgToPng, sampleInput, today, isoDate } from '../lib/render.js';
-import { post, engagement, xEnabled, myUserId, mentions, reply } from '../lib/x.js';
+import { post, engagement, xEnabled, myUserId, mentions, reply, searchRecent } from '../lib/x.js';
 import { parseTarget, resolveName, shortAddress } from '../lib/mentions.js';
 import { kouFor } from '../lib/kou.js';
 
@@ -199,7 +199,11 @@ async function answerMentions() {
     st.sinceId = m.id;
     if (m.author_id === st.userId || answered >= Math.min(left, rc.maxPerRun ?? 10)) continue;
     const target = parseTarget(m.text);
-    if (!target) continue; // nothing to draw; stay silent rather than spend on a reply
+    if (!target) {
+      // Nothing to draw. Keep it for the daily report, where a person can answer it with one tap.
+      st.inbox = [...(st.inbox || []), { id: m.id, text: m.text.slice(0, 280), at: m.created_at }].slice(-20);
+      continue;
+    }
     const address = target.address || (await resolveName(target.name));
     if (!address) continue;
     const svg = await renderSvg(client, project, BigInt(address), 0n, dep);
@@ -216,6 +220,39 @@ try {
   await answerMentions();
 } catch (e) {
   console.error(`mentions: ${e.shortMessage || e.message}`);
+}
+
+// Once a day, shortly before the operator agent's morning run, collect a few recent posts worth joining.
+// Nothing is posted here: the agent drafts replies and the owner sends them from the daily report.
+async function engagementBrief() {
+  const bc = cfg.brief;
+  if (!bc?.queries?.length || !xEnabled()) return;
+  const hour = new Date(now * 1000).getUTCHours();
+  if (state.briefDay === todayStr || hour < (bc.hourUTC ?? 22)) return;
+  const seen = new Set();
+  const picks = [];
+  const perQuery = Math.max(10, Math.floor((bc.maxReads ?? 20) / bc.queries.length));
+  for (const q of bc.queries) {
+    for (const t of await searchRecent(`(${q}) -is:retweet -is:reply -from:${cfg.handle}`, perQuery)) {
+      if (seen.has(t.id) || t.followers < (bc.minFollowers ?? 1000) || t.followers > (bc.maxFollowers ?? 20000)) continue;
+      seen.add(t.id);
+      picks.push({ ...t, query: q, url: `https://x.com/${t.author}/status/${t.id}` });
+    }
+  }
+  picks.sort((a, b) => b.likes - a.likes);
+  const inbox = state.replies?.inbox || [];
+  fs.writeFileSync(
+    path.join(ROOT, 'metrics', 'engagement-brief.json'),
+    JSON.stringify({ day: todayStr, candidates: picks.slice(0, bc.keep ?? 5), inbox }, null, 2) + '\n',
+  );
+  state.briefDay = todayStr;
+  console.log(`engagement brief: ${Math.min(picks.length, bc.keep ?? 5)} candidate(s), ${inbox.length} unanswered mention(s)`);
+}
+
+try {
+  await engagementBrief();
+} catch (e) {
+  console.error(`brief: ${e.shortMessage || e.message}`);
 }
 
 saveState(state);
