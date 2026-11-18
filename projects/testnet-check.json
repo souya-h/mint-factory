@@ -12,7 +12,7 @@
   "stepEvery": 2,
   "maxSupply": 0,
   "durationDays": 7,
-  "status": "live",
+  "status": "paused",
   "post": {
     "templates": []
   }
