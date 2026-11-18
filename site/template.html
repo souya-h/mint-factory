@@ -151,7 +151,7 @@ async function preview() {
       if (edition) seed = await pub.readContract({ ...edition, functionName: 'daySeed', args: [day] });
       if (seed === 0n) {
         seed = BigInt(keccak256(toHex(`${CFG.project.slug}:${day}`)));
-        status("Today's pattern is fixed onchain by the first mint of the day. This is a stand-in.");
+        status("Today's piece is fixed onchain at the start of the sale. This is a stand-in.");
       }
       await draw(seed, day);
     } else if (mode === 'perSeed') {
