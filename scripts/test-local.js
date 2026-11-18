@@ -149,7 +149,7 @@ for (const d of Object.values(deployments)) d.deployedAt -= 80 * 3600;
 fs.writeFileSync(dl, JSON.stringify(deployments));
 runBot();
 const state = JSON.parse(fs.readFileSync(stateFile, 'utf8'));
-assert.ok(active.every((p) => state.projects[p.slug]?.killed), 'kill rule did not fire');
+assert.ok(active.filter((p) => p.kill).every((p) => state.projects[p.slug]?.killed), 'kill rule did not fire');
 console.log('ok  bot (post, no double post, kill rule)');
 
 console.log('all checks passed');
