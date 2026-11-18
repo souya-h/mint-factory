@@ -10,7 +10,7 @@ concurrency: bot
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 80
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -45,3 +45,21 @@ jobs:
         run: gh workflow run pages.yml
         env:
           GH_TOKEN: ${{ github.token }}
+      # GitHub's cron trigger is unreliable for this repository, so each run also schedules the next one:
+      # it waits until minute 17 of the next hour and dispatches this workflow again. The chain is skipped
+      # if another bot run is already queued or running, so cron runs and chained runs never multiply.
+      - name: Schedule next run
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          now=$(date -u +%s)
+          next=$(( (now / 3600 + 1) * 3600 + 17 * 60 ))
+          sleep $(( next - now ))
+          others=$(gh api "repos/${{ github.repository }}/actions/workflows/bot.yml/runs?per_page=20" \
+            --jq '[.workflow_runs[] | select((.status == "queued" or .status == "in_progress" or .status == "waiting" or .status == "pending") and .id != ${{ github.run_id }})] | length')
+          if [ "$others" = "0" ]; then
+            gh workflow run bot.yml --ref main
+          else
+            echo "another bot run is pending; not chaining"
+          fi
