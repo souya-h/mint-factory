@@ -93,7 +93,8 @@ async function draw(seed, data) {
   const svg = CFG.deployment
     ? await pub.readContract({ ...call, address: CFG.deployment.renderer })
     : await pub.readContract({ ...call, code: CFG.rendererBytecode });
-  $('art').src = 'data:image/svg+xml;base64,' + btoa(svg);
+  // encodeURIComponent keeps non-Latin text (kanji in the haiku works) intact; btoa would throw.
+  $('art').src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
 }
 
 async function previewAddress(address) {
