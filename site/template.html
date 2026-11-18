@@ -205,11 +205,38 @@ async function refreshSupply() {
   } catch { /* supply is optional */ }
 }
 
+// EIP-6963: each installed wallet announces itself. Using this instead of window.ethereum avoids
+// sending the request to a different extension than the one the visitor is looking at.
+const announced = new Map();
+window.addEventListener('eip6963:announceProvider', (e) => announced.set(e.detail.info.uuid, e.detail));
+window.dispatchEvent(new Event('eip6963:requestProvider'));
+let chosen = null;
+
+function pickWallet() {
+  const list = [...announced.values()];
+  if (chosen) return Promise.resolve(chosen);
+  if (list.length === 1) return Promise.resolve((chosen = list[0].provider));
+  if (list.length === 0) return Promise.resolve(window.ethereum || null);
+  return new Promise((resolve) => {
+    const el = $('status');
+    el.textContent = 'Choose your wallet: ';
+    for (const w of list) {
+      const b = document.createElement('button');
+      b.textContent = w.info.name;
+      b.style.margin = '4px 8px 0 0';
+      b.onclick = () => resolve((chosen = w.provider));
+      el.append(b);
+    }
+  });
+}
+
 async function mint() {
-  if (!window.ethereum) return status('No wallet found. Open this page in a wallet app or install a browser wallet.');
+  await new Promise((r) => setTimeout(r, 150)); // give late wallets time to announce
+  const provider = await pickWallet();
+  if (!provider) return status('No wallet found. Open this page in a wallet app or install a browser wallet.');
   $('mintBtn').disabled = true;
   try {
-    const wallet = createWalletClient({ chain, transport: custom(window.ethereum) });
+    const wallet = createWalletClient({ chain, transport: custom(provider) });
     status('Connecting… approve the connection in your wallet (open the wallet if nothing appears).');
     const [account] = await wallet.requestAddresses();
     const current = await wallet.getChainId();
