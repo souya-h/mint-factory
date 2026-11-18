@@ -1,0 +1,19 @@
+{
+  "slug": "testnet-check",
+  "name": "Okonomi Testnet Check",
+  "symbol": "OKOTEST",
+  "description": "Internal test edition on Base Sepolia. Not for sale.",
+  "renderer": "DailyBlock",
+  "seedMode": "perDay",
+  "priceUsd": 0,
+  "priceEth": "0.00001",
+  "priceStepUsd": 0,
+  "priceStepEth": "0.000005",
+  "stepEvery": 2,
+  "maxSupply": 0,
+  "durationDays": 7,
+  "status": "live",
+  "post": {
+    "templates": []
+  }
+}
