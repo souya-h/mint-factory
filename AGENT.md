@@ -30,6 +30,12 @@ Okonomi Press（X: @okonomipress）のNFTレーベルを運営する。オーナ
 9. 承認が必要な変更は、main に直接 push せず、ブランチを作ってプルリクエストを出す（下記）。
 10. 最後に、オーナー向けの日報を出力する（下記）。
 
+## 自動返信とアクセス解析
+
+- ボットは毎時、@okonomipress へのメンションを読み、ウォレットアドレスか .eth の名前が書かれていれば、`config.json` の `replies.project`（初期値は Hash Haiku）の作品画像で返信する。上限は1日 `replies.maxPerDay` 件。アドレスがないメンションには返信しない（費用を使わないため）。
+- 日報の数字に、その日の返信数（`state.json` の `replies.count`）も書く。返信が上限に達する日が続いたら、上限を上げる提案をプルリクエストで出す（費用が増えるため承認が必要）。
+- `config.json` の `analytics.cloudflareToken` が入っていれば、ミントページの閲覧数を Cloudflare Web Analytics で数えている。
+
 ## 価格の方針：徐々に値上げする
 
 - 各プロジェクトは「最初は安く、売れるほど上がる」仕組みになっている。`priceEth` が最初の価格、`stepEvery` 枚売れるごとに `priceStepEth` ずつ上がる（コントラクトが自動で行う）。

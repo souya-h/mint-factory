@@ -107,6 +107,17 @@ for (const project of loadProjects()) {
   console.log(`ok  ${project.slug}`);
 }
 
+// Mention parsing.
+{
+  const { parseTarget } = await import('../lib/mentions.js');
+  assert.deepEqual(parseTarget('@okonomipress 0xd8da6bf26964af9d7eed9e03e53415d37aa96045 pls'), { address: '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045' });
+  assert.deepEqual(parseTarget('@okonomipress mine is Vitalik.eth!'), { name: 'vitalik.eth' });
+  assert.deepEqual(parseTarget('@okonomipress jesse.base.eth'), { name: 'jesse.base.eth' });
+  assert.equal(parseTarget('@okonomipress love this'), null);
+  assert.equal(parseTarget('@okonomipress 0x1234'), null);
+  console.log('ok  mention parsing');
+}
+
 // Stepped pricing across a boundary: price rises after every 2 mints, old price is refused.
 {
   const base = loadProjects().find((p) => p.seedMode === 'perMint') || { ...loadProjects()[0], seedMode: 'perMint' };

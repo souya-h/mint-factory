@@ -10,7 +10,8 @@ import {
 } from '../lib/config.js';
 import { deployProject } from '../lib/deploy.js';
 import { renderSvg, svgToPng, sampleInput, today, isoDate } from '../lib/render.js';
-import { post, engagement, xEnabled } from '../lib/x.js';
+import { post, engagement, xEnabled, myUserId, mentions, reply } from '../lib/x.js';
+import { parseTarget, resolveName, shortAddress } from '../lib/mentions.js';
 
 const MILESTONES = [1, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000, 25000, 50000, 100000];
 
@@ -169,6 +170,47 @@ for (const project of loadProjects()) {
     console.error(`${project.slug}: ${e.shortMessage || e.message}`);
     rows.push({ slug: project.slug, status: 'error', supply: 0, revenue: '0', posts: 0, engagement: 0, note: (e.shortMessage || e.message).slice(0, 120) });
   }
+}
+
+// Replies: someone mentions @<handle> with a wallet address or .eth name, and gets their artwork back.
+async function answerMentions() {
+  const rc = cfg.replies;
+  if (!rc?.project || !xEnabled()) return;
+  const project = loadProjects().find((p) => p.slug === rc.project);
+  if (!project || project.stats || project.status === 'paused') return;
+  const st = (state.replies ??= { sinceId: null, day: '', count: 0, userId: null });
+  if (st.day !== todayStr) {
+    st.day = todayStr;
+    st.count = 0;
+  }
+  const left = (rc.maxPerDay ?? 15) - st.count;
+  if (left <= 0) return;
+  st.userId ??= await myUserId();
+  // On the very first run only look at the latest few, so old mentions are not all billed and answered.
+  const found = await mentions(st.userId, st.sinceId, st.sinceId ? 20 : 5);
+  const dep = loadDeployments(chain)[project.slug];
+  let answered = 0;
+  for (const m of found) {
+    st.sinceId = m.id;
+    if (m.author_id === st.userId || answered >= Math.min(left, rc.maxPerRun ?? 10)) continue;
+    const target = parseTarget(m.text);
+    if (!target) continue; // nothing to draw; stay silent rather than spend on a reply
+    const address = target.address || (await resolveName(target.name));
+    if (!address) continue;
+    const svg = await renderSvg(client, project, BigInt(address), 0n, dep);
+    const who = target.name || shortAddress(address);
+    const tail = dep ? 'Yours to mint, link in bio.' : 'Mint opens soon.';
+    await reply({ text: `${project.name} for ${who}.\n\nEvery wallet has exactly one. ${tail}`, png: svgToPng(svg), inReplyTo: m.id });
+    answered++;
+    st.count++;
+  }
+  if (answered) console.log(`answered ${answered} mention(s)`);
+}
+
+try {
+  await answerMentions();
+} catch (e) {
+  console.error(`mentions: ${e.shortMessage || e.message}`);
 }
 
 saveState(state);

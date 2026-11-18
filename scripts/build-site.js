@@ -3,7 +3,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { compile } from '../lib/compile.js';
-import { ROOT, CHAINS, loadConfig, loadProjects, loadDeployments, loadState, rpcUrl } from '../lib/config.js';
+import { ROOT, CHAINS, loadConfig, loadProjects, loadDeployments, loadState, rpcUrl, publicClient } from '../lib/config.js';
+import { renderSvg, sampleInput } from '../lib/render.js';
+import { cardPng } from '../lib/card.js';
 
 const require = createRequire(import.meta.url);
 const cfg = loadConfig();
@@ -20,6 +22,27 @@ const USED = ['mint', 'totalSupply', 'daySeed', 'minted', 'currentPrice', 'seedU
 const dist = path.join(ROOT, 'dist');
 fs.rmSync(dist, { recursive: true, force: true });
 fs.mkdirSync(dist, { recursive: true });
+
+const siteUrl = (cfg.siteUrl || '').replace(/\/?$/, '/');
+const client = publicClient(cfg.chain);
+// Optional page-view counting with Cloudflare Web Analytics. The token is public (it ships in the page).
+const token = cfg.analytics?.cloudflareToken;
+const analytics = token
+  ? `<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "${token.replace(/[^a-zA-Z0-9]/g, '')}"}'></script>`
+  : '';
+
+/** Writes og.png for a project and returns its absolute URL, or '' if it could not be drawn. */
+async function card(p, dep) {
+  try {
+    const input = await sampleInput(client, p, dep, cfg, contracts.Edition.abi);
+    const svg = await renderSvg(client, p, input.seed, input.data, dep);
+    fs.writeFileSync(path.join(dist, p.slug, 'og.png'), cardPng(p, svg));
+    return siteUrl ? `${siteUrl}${p.slug}/og.png` : `./og.png`;
+  } catch (e) {
+    console.warn(`no preview card for ${p.slug}: ${e.shortMessage || e.message}`);
+    return '';
+  }
+}
 
 const listed = [];
 for (const p of loadProjects()) {
@@ -42,13 +65,16 @@ for (const p of loadProjects()) {
     statsYear: cfg.statsYear,
     handle: cfg.handle,
   };
+  fs.mkdirSync(path.join(dist, p.slug), { recursive: true });
+  const image = await card(p, dep);
   const html = template
+    .replace('__OG_IMAGE__', image ? `<meta property="og:image" content="${image}">\n<meta name="twitter:image" content="${image}">` : '')
+    .replace('__ANALYTICS__', () => analytics)
     .replaceAll('__TITLE__', esc(p.name))
     .replaceAll('__DESC__', esc(p.description))
     .replace('__VIEM__', viemVersion)
     .replace('__STATS_JS__', () => statsJs)
     .replace('__CFG__', () => JSON.stringify(pageCfg).replace(/</g, '\\u003c'));
-  fs.mkdirSync(path.join(dist, p.slug), { recursive: true });
   fs.writeFileSync(path.join(dist, p.slug, 'index.html'), html);
   listed.push(p);
 }
@@ -56,7 +82,7 @@ for (const p of loadProjects()) {
 fs.writeFileSync(
   path.join(dist, 'index.html'),
   `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Editions</title><style>:root{color-scheme:dark}body{margin:0;background:#0c0d10;color:#e8e6e1;font:16px/1.5 ui-monospace,Menlo,Consolas,monospace}
+<title>Okonomi Press</title>${analytics}<style>:root{color-scheme:dark}body{margin:0;background:#0c0d10;color:#e8e6e1;font:16px/1.5 ui-monospace,Menlo,Consolas,monospace}
 main{max-width:480px;margin:0 auto;padding:32px 20px}a{color:#e8e6e1;display:block;padding:16px;border:1px solid #2c2f38;border-radius:6px;margin:0 0 12px;text-decoration:none}
 a:hover,a:focus-visible{border-color:#7fb3ff}span{color:#a9a69f;display:block;font-size:14px}</style></head><body><main>
 ${listed.map((p) => `<a href="./${p.slug}/"><strong>${esc(p.name)}</strong><span>${esc(p.description)}</span></a>`).join('\n')}

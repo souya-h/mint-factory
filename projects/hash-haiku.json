@@ -22,12 +22,14 @@
     ],
     "templates": [
       "Every wallet has one poem.\n\nHash Haiku: your address, read as 5-7-5. Find yours, link in bio. 俳句",
+      "Mention @okonomipress with your wallet address or .eth name to see your haiku. Then make it yours.",
       "A haiku from a random wallet.\n\nYours is waiting. Hash Haiku, one per wallet.",
       "Hash Haiku: {supply} wallets have claimed their poem.",
       "Hash Haiku is {price} ETH. It goes up in {nextStep} mints. Early poems are the cheapest."
     ],
     "teaserTemplates": [
       "Every wallet has one poem.\n\nHash Haiku: your address, read as 5-7-5. Preview yours free, link in bio. 俳句",
+      "Mention @okonomipress with your wallet address or .eth name, and your haiku comes back to you. 俳句",
       "A haiku from a random wallet.\n\nWhat does yours say? Mint opens soon."
     ]
   },

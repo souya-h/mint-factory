@@ -9,5 +9,13 @@
   "statsHosts": [
     "https://base.blockscout.com",
     "https://eth.blockscout.com"
-  ]
+  ],
+  "analytics": {
+    "cloudflareToken": ""
+  },
+  "replies": {
+    "project": "hash-haiku",
+    "maxPerDay": 15,
+    "maxPerRun": 10
+  }
 }
