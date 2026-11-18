@@ -66,6 +66,7 @@ const chain = {
   name: CFG.chain.name,
   nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
   rpcUrls: { default: { http: [CFG.chain.rpc] } },
+  ...(CFG.chain.explorer && { blockExplorers: { default: { name: 'Explorer', url: CFG.chain.explorer } } }),
 };
 const pub = createPublicClient({ chain, transport: http(CFG.chain.rpc) });
 const edition = CFG.deployment && { address: CFG.deployment.edition, abi: CFG.editionAbi };
@@ -209,11 +210,20 @@ async function mint() {
   $('mintBtn').disabled = true;
   try {
     const wallet = createWalletClient({ chain, transport: custom(window.ethereum) });
+    status('Connecting… approve the connection in your wallet (open the wallet if nothing appears).');
     const [account] = await wallet.requestAddresses();
-    try {
-      await wallet.switchChain({ id: chain.id });
-    } catch {
-      await wallet.addChain({ chain });
+    const current = await wallet.getChainId();
+    if (current !== chain.id) {
+      status(`Switching to ${chain.name}… approve it in your wallet.`);
+      try {
+        await wallet.switchChain({ id: chain.id });
+      } catch (e) {
+        // 4902: the wallet does not know this network yet, so offer to add it.
+        if (e.code !== 4902 && e.cause?.code !== 4902 && !/Unrecognized chain|4902/i.test(e.message || '')) throw e;
+        status(`Adding ${chain.name} to your wallet… approve it in your wallet.`);
+        await wallet.addChain({ chain });
+        await wallet.switchChain({ id: chain.id });
+      }
     }
     let data = 0n;
     if (mode === 'perSeed') {
