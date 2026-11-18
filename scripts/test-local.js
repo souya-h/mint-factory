@@ -149,7 +149,7 @@ runBot();
 assert.equal(fs.readdirSync(path.join(out, 'dryrun')).filter((f) => f.endsWith('.txt')).length, first, 'bot posted twice');
 
 execFileSync('node', ['scripts/build-site.js'], { cwd: ROOT, env: process.env });
-assert.ok(fs.existsSync(path.join(ROOT, 'dist', 'daily-block', 'index.html')));
+assert.ok(fs.existsSync(path.join(ROOT, 'dist', 'hash-haiku', 'index.html')));
 console.log('ok  site build');
 
 // Kill rule: pretend the projects went live 80 hours ago with too few mints.
