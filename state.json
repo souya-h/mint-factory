@@ -1,12 +1,13 @@
 {
   "projects": {
     "daily-block": {
-      "postCount": 2,
-      "lastPostAt": 1794966109,
+      "postCount": 3,
+      "lastPostAt": 1795011449,
       "lastSupply": 0,
       "tweetIds": [
         "manual-2026-11-17-19-daily-block-8239",
-        "2122867847299047507"
+        "2122867847299047507",
+        "2123058018409423142"
       ],
       "engagement": 0,
       "engagementDay": "2026-11-17"
@@ -41,5 +42,5 @@
     }
   },
   "day": "2026-11-18",
-  "postsToday": 3
+  "postsToday": 4
 }
