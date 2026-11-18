@@ -12,7 +12,7 @@
   "stepEvery": 100,
   "maxSupply": 0,
   "durationDays": 45,
-  "status": "teaser",
+  "status": "paused",
   "sampleAddresses": [],
   "post": {
     "templates": [
