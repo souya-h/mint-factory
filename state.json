@@ -48,6 +48,13 @@
       "lastSupply": 0,
       "tweetIds": [],
       "engagement": 0
+    },
+    "daily-haiku": {
+      "postCount": 0,
+      "lastPostAt": 0,
+      "lastSupply": 0,
+      "tweetIds": [],
+      "engagement": 0
     }
   },
   "day": "2026-11-18",
