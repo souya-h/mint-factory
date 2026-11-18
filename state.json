@@ -29,7 +29,8 @@
       "tweetIds": [
         "2122892064191107135"
       ],
-      "engagement": 0
+      "engagement": 0,
+      "engagementDay": "2026-11-18"
     },
     "tx-haiku": {
       "postCount": 0,
