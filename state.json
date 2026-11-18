@@ -40,6 +40,13 @@
       "lastSupply": 0,
       "tweetIds": [],
       "engagement": 0
+    },
+    "testnet-check": {
+      "postCount": 0,
+      "lastPostAt": 0,
+      "lastSupply": 0,
+      "tweetIds": [],
+      "engagement": 0
     }
   },
   "day": "2026-11-18",
