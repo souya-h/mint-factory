@@ -1,0 +1,39 @@
+{
+  "slug": "daily-haiku",
+  "name": "Daily Haiku",
+  "symbol": "DHAIKU",
+  "description": "One haiku per day, written for the day's place in the Japanese calendar of 72 micro-seasons. Open for 24 hours, then gone.",
+  "renderer": "DailyHaiku",
+  "seedMode": "perDay",
+  "priceUsd": 1,
+  "priceEth": "0.0005",
+  "priceStepUsd": 0.25,
+  "priceStepEth": "0.00013",
+  "stepEvery": 100,
+  "maxSupply": 0,
+  "durationDays": 0,
+  "status": "teaser",
+  "post": {
+    "slotsUTC": [
+      2
+    ],
+    "templates": [
+      "Daily Haiku {date}\n\n{kouKanji} ({kouRomaji}): {kouEnglish}.\n\nToday's poem, open for 24 hours. 本日の一句",
+      "{kouKanji}: {kouEnglish}.\n\nDaily Haiku {date}. {hoursLeft} hours left, then it never comes back.",
+      "Daily Haiku {date}: {supply} minted today's poem."
+    ],
+    "teaserTemplates": [
+      "Daily Haiku {date}\n\n{kouKanji} ({kouRomaji}): {kouEnglish}.\n\nJapan splits the year into 72 small seasons. One poem for each day. 本日の一句",
+      "{kouKanji}: {kouEnglish}.\n\nToday's haiku, from the chain. Daily Haiku, mint opens soon."
+    ]
+  },
+  "teaser": {
+    "afterPosts": 6,
+    "promoteEngagement": 30,
+    "killEngagement": 5
+  },
+  "kill": {
+    "afterHours": 72,
+    "minMints": 20
+  }
+}

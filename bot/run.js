@@ -12,6 +12,7 @@ import { deployProject } from '../lib/deploy.js';
 import { renderSvg, svgToPng, sampleInput, today, isoDate } from '../lib/render.js';
 import { post, engagement, xEnabled, myUserId, mentions, reply } from '../lib/x.js';
 import { parseTarget, resolveName, shortAddress } from '../lib/mentions.js';
+import { kouFor } from '../lib/kou.js';
 
 const MILESTONES = [1, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000, 25000, 50000, 100000];
 
@@ -54,7 +55,11 @@ function postDue(postCfg, lastPostAt) {
 }
 
 function fill(template, project, supply, price = 0n) {
+  const k = kouFor(new Date(now * 1000));
   return template
+    .replaceAll('{kouKanji}', k.kanji)
+    .replaceAll('{kouRomaji}', k.romaji)
+    .replaceAll('{kouEnglish}', k.english)
     .replaceAll('{price}', formatEther(price))
     .replaceAll('{nextStep}', String(project.stepEvery ? project.stepEvery - (Number(supply) % project.stepEvery) : ''))
     .replaceAll('{hoursLeft}', String(24 - new Date(now * 1000).getUTCHours()))

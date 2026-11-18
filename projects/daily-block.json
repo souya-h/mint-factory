@@ -12,7 +12,7 @@
   "stepEvery": 100,
   "maxSupply": 0,
   "durationDays": 0,
-  "status": "teaser",
+  "status": "paused",
   "post": {
     "templates": [
       "Daily Block {date}\n\nOne pattern per day. 24 hours to mint, then it never comes back. 本日分",
