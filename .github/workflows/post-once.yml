@@ -1,0 +1,28 @@
+name: post-once
+on:
+  workflow_dispatch:
+    inputs:
+      text:
+        description: "Path of the text file to post (in the repo)"
+        required: true
+      image:
+        description: "Path of a PNG to attach (optional)"
+        required: false
+permissions:
+  contents: read
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --omit=dev
+      - run: node scripts/post-once.js "${{ inputs.text }}" ${{ inputs.image && format('"{0}"', inputs.image) || '' }}
+        env:
+          X_API_KEY: ${{ secrets.X_API_KEY }}
+          X_API_SECRET: ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_SECRET: ${{ secrets.X_ACCESS_SECRET }}
