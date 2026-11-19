@@ -86,7 +86,7 @@ gh api repos/souya-h/mint-factory/pulls -X POST \
 
 ## 日報（毎回の最後に出力する）
 
-日本語で、スマホの通知で読める短さにする。
+`reports/YYYY-MM-DD.md` に書いて main に push する（1行目は `# 日報 YYYY-MM-DD`）。push すると `daily-report` ワークフローが GitHub の Issue を作り、オーナーにメールと GitHub アプリの通知が届く。同じ内容を SendUserMessage でも送る。日本語で、スマホで読める短さにする。
 
 1. **承認待ち**：開いているプルリクエストの一覧とリンク。なければ「なし」。
 2. **今日の投稿**（X APIが入るまで）：`queue/` にある投稿素材を、投稿する順に並べる。各項目に、画像のリンク（`https://github.com/souya-h/mint-factory/blob/main/queue/<ファイル名>`）と、そのままコピーできる文面を付ける。
