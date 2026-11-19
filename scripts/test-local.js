@@ -148,6 +148,25 @@ for (const project of loadProjects()) {
   console.log('ok  stepped price');
 }
 
+// Hash Haiku: a minter gets their own wallet's poem, whatever address or data they pass in.
+{
+  const base = loadProjects().find((p) => p.slug === 'hash-haiku');
+  const proj = { ...base, slug: 'own-poem-test', priceEth: '0.001', priceStepEth: '0', stepEvery: 0 };
+  const dep = await deployProject(proj, 'local');
+  const ed = { address: dep.edition, abi };
+  const other = BigInt('0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045');
+  await mint(dep.edition, other, parseEther('0.001')); // tries to pass someone else's address as data
+  assert.equal((await client.readContract({ ...ed, functionName: 'ownerOf', args: [1n] })).toLowerCase(), account.address.toLowerCase());
+  assert.equal(await client.readContract({ ...ed, functionName: 'seedOf', args: [1n] }), BigInt(account.address));
+  const img = Buffer.from(decode(await client.readContract({ ...ed, functionName: 'tokenURI', args: [1n] })).image.split(',')[1], 'base64').toString();
+  assert.equal(img, await renderSvg(client, proj, BigInt(account.address), 0n, dep), 'token must show the minter\'s own poem');
+  assert.ok(img.includes('HASH HAIKU') && !img.includes('TX HAIKU'));
+  const d = loadDeployments('local');
+  delete d['own-poem-test'];
+  fs.writeFileSync(path.join(ROOT, 'deployments', 'local.json'), JSON.stringify(d));
+  console.log('ok  own poem only');
+}
+
 // Gifts: owner only, capped, one per wallet, free, and they do not move the price step.
 {
   const base = loadProjects().find((p) => p.slug === 'hash-haiku');

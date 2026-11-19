@@ -42,8 +42,11 @@ contract HashHaiku {
         );
         string memory l3 = string.concat(_pick(ADV2, h >> 24), " ", n1b, " ", _pick(VERB2, h >> 28));
 
-        string memory label = data == 0 ? _short(Strings.toHexString(address(uint160(seed)))) : _short(Strings.toHexString(data, 32));
-        string memory title = data == 0 ? "HASH HAIKU" : "TX HAIKU";
+        // Transaction mode only when the seed IS a 256-bit hash (PerSeed sets seed = data). A wallet seed fits in
+        // 160 bits, so whatever `data` a minter passes in wallet mode, the token still reads as that wallet's poem.
+        bool txMode = data != 0 && data == seed && seed > type(uint160).max;
+        string memory label = txMode ? _short(Strings.toHexString(data, 32)) : _short(Strings.toHexString(address(uint160(seed))));
+        string memory title = txMode ? "TX HAIKU" : "HASH HAIKU";
         // DejaVu Sans Mono advance is 0.602em; at 18px that is about 10.84px per character.
         // The longest possible line is 36 characters (about 390px), so every poem fits.
         uint256 cursorX = 48 + (bytes(l3).length * 1084) / 100 + 2;
