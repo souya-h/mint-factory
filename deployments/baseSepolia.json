@@ -5,5 +5,12 @@
     "payout": "0xaD6290a180587C7371EdbFbC4A3EF68e1afDE5F7",
     "block": 60476863,
     "deployedAt": 1795017240
+  },
+  "hash-haiku": {
+    "edition": "0x50b887bbecefb41d280cc77893086e6c2150ae7c",
+    "renderer": "0xefde71873425dcce1d25ab4d2bced73fbf5b354f",
+    "payout": "0xaD6290a180587C7371EdbFbC4A3EF68e1afDE5F7",
+    "block": 60896902,
+    "deployedAt": 1795101248
   }
 }
