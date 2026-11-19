@@ -280,8 +280,18 @@ async function mint() {
   $('mintBtn').disabled = true;
   try {
     const wallet = createWalletClient({ chain, transport: custom(provider) });
-    status('Connecting… approve the connection in your wallet (open the wallet if nothing appears).');
-    const [account] = await wallet.requestAddresses();
+    // A wallet that is already connected to this site answers eth_accounts at once without a prompt.
+    // Asking again with eth_requestAccounts can sit unanswered in some wallets, so only ask when needed.
+    let [account] = await wallet.getAddresses().catch(() => []);
+    if (!account) {
+      status('Connecting… approve the connection in your wallet (open the wallet if nothing appears).');
+      const slow = setTimeout(() => status('Still waiting for the wallet. Open it and look for a pending request, or reload this page and try again.'), 20000);
+      try {
+        [account] = await wallet.requestAddresses();
+      } finally {
+        clearTimeout(slow);
+      }
+    }
     const current = await wallet.getChainId();
     if (current !== chain.id) {
       status(`Switching to ${chain.name}… approve it in your wallet.`);
