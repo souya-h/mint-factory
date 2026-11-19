@@ -57,7 +57,8 @@
       "tweetIds": [
         "2123239219183174111"
       ],
-      "engagement": 0
+      "engagement": 0,
+      "engagementDay": "2026-11-19"
     }
   },
   "day": "2026-11-19",
