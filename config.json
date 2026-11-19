@@ -23,9 +23,9 @@
   "brief": {
     "hourUTC": 22,
     "queries": [
-      "\"onchain art\" OR \"generative art\" OR genart",
-      "NFTアート OR ジェネラティブアート OR オンチェーン",
-      "\"Base\" (NFT OR mint) art"
+      "(\"onchain art\" OR \"generative art\" OR genart OR \"code art\") -giveaway -airdrop -whitelist -wl",
+      "(haiku OR 俳句) (onchain OR generative OR code OR poem OR poetry) -giveaway",
+      "(ジェネラティブアート OR NFTアート OR クリプトアート) -プレゼント -エアドロ -AMA"
     ],
     "maxReads": 30,
     "minFollowers": 1000,
