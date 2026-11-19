@@ -365,7 +365,12 @@ if (mode === 'perSeed') {
   $('address').onkeydown = (e) => e.key === 'Enter' && $('previewBtn').click();
 }
 // Selecting the whole field on focus means a paste replaces the old value instead of appending to it.
+// Clicking a field that still shows the last previewed value selects it too (the focus event does not fire again).
 $('address').addEventListener('focus', () => $('address').select());
+$('address').addEventListener('click', () => {
+  const v = $('address').value;
+  if (v && (v === shown || v === shownTx || new URLSearchParams(location.search).has('tx'))) $('address').select();
+});
 if (mode === 'perMinter') {
   $('addressRow').hidden = false;
   $('previewBtn').onclick = () => previewAddress($('address').value.trim()).catch((e) => status(`Preview failed: ${e.message}`));
