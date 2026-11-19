@@ -40,7 +40,13 @@ jobs:
           [ -d queue ] && git add queue
           if ! git diff --cached --quiet; then
             if ! git diff --cached --quiet -- deployments; then echo "rebuild=1" >> "$GITHUB_ENV"; fi
-            git commit -m "bot: update state" && git push
+            git commit -m "bot: update state"
+            # Another workflow (or the operator) may have pushed meanwhile: rebase onto it and retry.
+            # In a conflict the bot's own state wins (-X theirs during a rebase keeps the commit being replayed).
+            for i in 1 2 3; do
+              git push && break
+              git pull --rebase -X theirs -q || exit 1
+            done
           fi
       - name: Rebuild site after a new deployment
         if: env.rebuild == '1'
