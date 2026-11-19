@@ -52,7 +52,7 @@ for (const p of loadProjects()) {
   const dep = deployments[p.slug] || null;
   if (testnet && !dep) continue;
   const pageCfg = {
-    project: { slug: p.slug, name: p.name, description: p.description, seedMode: p.seedMode, priceEth: p.priceEth, priceStepEth: p.priceStepEth || '0', stepEvery: p.stepEvery || 0, stats: Boolean(p.stats), launch: p.launch || null, giftNote: p.giftLimit ? p.giftNote || '' : '' },
+    project: { slug: p.slug, name: p.name, description: p.description, seedMode: p.seedMode, priceEth: dep?.priceEth || p.priceEth, priceStepEth: dep?.priceStepEth || p.priceStepEth || '0', stepEvery: dep?.stepEvery ?? (p.stepEvery || 0), stats: Boolean(p.stats), launch: p.launch || null, giftNote: p.giftLimit ? p.giftNote || '' : '' },
     chain: {
       id: chain.id,
       name: chain.name,

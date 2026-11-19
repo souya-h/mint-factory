@@ -2,21 +2,33 @@
 // and checks the token reads back. The page for it is built under /test/ by the site workflow.
 // Usage: CHAIN=baseSepolia node scripts/testnet.js [slug]
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
 import { formatEther } from 'viem';
 import { compile } from '../lib/compile.js';
-import { loadConfig, loadProjects, loadDeployments, publicClient, walletClient } from '../lib/config.js';
+import { ROOT, loadConfig, loadProjects, loadDeployments, publicClient, walletClient } from '../lib/config.js';
 import { deployProject } from '../lib/deploy.js';
 
 const cfg = loadConfig();
 if (cfg.chain !== 'baseSepolia') throw new Error('run with CHAIN=baseSepolia');
 const slug = process.argv[2] || 'hash-haiku';
-const project = loadProjects().find((p) => p.slug === slug);
+// Test prices are tiny so a faucet's worth of test ETH covers many mints, and the step comes after 2 paid mints
+// so the price rise can be seen on the page.
+const TEST = { priceEth: '0.00001', priceStepEth: '0.00001', stepEvery: 2 };
+const project = { ...loadProjects().find((p) => p.slug === slug), ...TEST };
 const client = publicClient(cfg.chain);
 const wallet = walletClient(cfg.chain);
 const abi = compile().Edition.abi;
 console.log(`deployer ${wallet.account.address}: ${formatEther(await client.getBalance({ address: wallet.account.address }))} ETH`);
 
-let dep = loadDeployments(cfg.chain)[slug];
+const all = loadDeployments(cfg.chain);
+let dep = all[slug];
+if (dep && dep.priceEth !== TEST.priceEth) {
+  // An older test copy at the real price: replace it with one at the test price.
+  delete all[slug];
+  fs.writeFileSync(path.join(ROOT, 'deployments', `${cfg.chain}.json`), JSON.stringify(all, null, 2) + '\n');
+  dep = null;
+}
 if (!dep) {
   dep = await deployProject(project, cfg.chain);
   console.log(`deployed ${slug}: edition ${dep.edition}, renderer ${dep.renderer}`);
