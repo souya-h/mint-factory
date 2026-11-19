@@ -13,6 +13,7 @@ import { renderSvg, svgToPng, sampleInput, today, isoDate } from '../lib/render.
 import { post, engagement, xEnabled, myUserId, mentions, reply, searchRecent } from '../lib/x.js';
 import { parseTarget, resolveName, shortAddress, textReply } from '../lib/mentions.js';
 import { kouFor } from '../lib/kou.js';
+import { webStats } from '../lib/webstats.js';
 
 const MILESTONES = [1, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000, 25000, 50000, 100000];
 
@@ -322,6 +323,22 @@ try {
   await engagementBrief();
 } catch (e) {
   console.error(`brief: ${e.shortMessage || e.message}`);
+}
+
+// Once a day: yesterday's and the last 7 days' page views, for the operator's daily report.
+async function siteStats() {
+  if (!process.env.CF_API_TOKEN || state.webStatsDay === todayStr) return;
+  const day = (n) => isoDate(today() - BigInt(n));
+  const out = { updated: new Date().toISOString(), yesterday: await webStats(cfg.analytics || {}, day(1), day(1)), week: await webStats(cfg.analytics || {}, day(7), day(1)) };
+  fs.writeFileSync(path.join(ROOT, 'metrics', 'web-analytics.json'), JSON.stringify(out, null, 2) + '\n');
+  state.webStatsDay = todayStr;
+  console.log(`site: ${out.yesterday?.views ?? 0} views yesterday, ${out.week?.views ?? 0} in 7 days`);
+}
+
+try {
+  await siteStats();
+} catch (e) {
+  console.error(`site stats: ${e.message}`);
 }
 
 saveState(state);

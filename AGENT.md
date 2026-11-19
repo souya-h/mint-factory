@@ -91,6 +91,8 @@ gh api repos/souya-h/mint-factory/pulls -X POST \
 
 ## 日報（毎回の最後に出力する）
 
+- サイトのアクセス数は `metrics/web-analytics.json`（ボットが1日1回、Cloudflare Web Analytics から取得）。前日と直近7日の閲覧数・訪問数、よく見られたページ、流入元（x.com など）を日報の数字に入れる。
+
 このリポジトリは公開されているので、日報はリポジトリ（ファイル、Issue、プルリクエストの本文）には書かない。オーナーとの会話に SendUserMessage で送り、PushNotification で一行の通知（例：「日報：承認待ち0件、返信候補3件」）を出す。日本語で、スマホで読める短さにする。
 
 1. **承認待ち**：開いているプルリクエストの一覧とリンク。なければ「なし」。

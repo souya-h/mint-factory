@@ -11,7 +11,9 @@
     "https://eth.blockscout.com"
   ],
   "analytics": {
-    "cloudflareToken": "c67263accc814543b7ab0cfbce1c7ac3"
+    "cloudflareToken": "c67263accc814543b7ab0cfbce1c7ac3",
+    "accountTag": "9dc6c3a5b30bfaad367c7c5df7dcf8bd",
+    "siteTag": "26ae6f541f74461893559bb4407fc867"
   },
   "replies": {
     "project": "hash-haiku",
