@@ -64,6 +64,7 @@ for (const p of loadProjects()) {
     statsHosts: cfg.statsHosts,
     statsYear: cfg.statsYear,
     handle: cfg.handle,
+    author: cfg.author?.line || '',
   };
   fs.mkdirSync(path.join(dist, p.slug), { recursive: true });
   const image = await card(p, dep);
@@ -86,6 +87,7 @@ fs.writeFileSync(
 main{max-width:480px;margin:0 auto;padding:32px 20px}a{color:#e8e6e1;display:block;padding:16px;border:1px solid #2c2f38;border-radius:6px;margin:0 0 12px;text-decoration:none}
 a:hover,a:focus-visible{border-color:#7fb3ff}span{color:#a9a69f;display:block;font-size:14px}</style></head><body><main>
 ${listed.map((p) => `<a href="./${p.slug}/"><strong>${esc(p.name)}</strong><span>${esc(p.description)}</span>${!deployments[p.slug] && p.launch ? `<span>${esc(p.launch.note)}</span>` : ''}${!deployments[p.slug] && p.giftLimit && p.giftNote ? `<span>${esc(p.giftNote)}</span>` : ''}</a>`).join('\n')}
+${cfg.author?.line ? `<p style="color:#a9a69f;font-size:14px">${esc(cfg.author.line)}</p>` : ''}
 </main></body></html>\n`,
 );
 console.log(`built ${listed.length} page(s) in dist/ for ${cfg.chain}`);

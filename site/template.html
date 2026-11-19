@@ -54,6 +54,7 @@ __ANALYTICS__
     <button id="saveBtn">Save image</button>
     <button id="shareBtn">Share on X</button>
   </div>
+  <p class="note" id="byline" hidden></p>
 </main>
 
 <script type="module">
@@ -316,6 +317,10 @@ function share() {
 
 $('name').textContent = CFG.project.name;
 $('desc').textContent = CFG.project.description;
+if (CFG.author) {
+  $('byline').textContent = CFG.author;
+  $('byline').hidden = false;
+}
 if (!edition && CFG.project.launch) {
   $('launchNote').textContent = CFG.project.launch.note;
   $('launchNote').hidden = false;
