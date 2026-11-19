@@ -25,12 +25,13 @@
       "engagementDay": "2026-11-17"
     },
     "hash-haiku": {
-      "postCount": 2,
-      "lastPostAt": 1795018651,
+      "postCount": 3,
+      "lastPostAt": 1795051051,
       "lastSupply": 0,
       "tweetIds": [
         "2122892064191107135",
-        "2123088223777739070"
+        "2123088223777739070",
+        "2123224120221413573"
       ],
       "engagement": 0,
       "engagementDay": "2026-11-18"
@@ -58,7 +59,7 @@
     }
   },
   "day": "2026-11-19",
-  "postsToday": 0,
+  "postsToday": 1,
   "replies": {
     "sinceId": "2123106707630907870",
     "day": "2026-11-19",
