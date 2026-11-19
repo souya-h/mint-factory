@@ -40,7 +40,7 @@ __ANALYTICS__
   <p class="note" id="giftNote" hidden></p>
 
   <div class="row" id="addressRow" hidden>
-    <input id="address" placeholder="0x… wallet address" aria-label="Wallet address" autocomplete="off" spellcheck="false">
+    <input id="address" placeholder="0x… wallet address or name.eth" aria-label="Wallet address" autocomplete="off" spellcheck="false">
     <button id="previewBtn">Preview</button>
   </div>
 
@@ -59,8 +59,9 @@ __ANALYTICS__
 
 <script type="module">
 import {
-  createPublicClient, createWalletClient, custom, http, parseEther, formatEther, isAddress, keccak256, toHex,
+  createPublicClient, createWalletClient, custom, http, parseEther, formatEther, isAddress, getAddress, keccak256, toHex,
 } from 'https://esm.sh/viem@__VIEM__';
+import { normalize } from 'https://esm.sh/viem@__VIEM__/ens';
 import { mainnet, base } from 'https://esm.sh/viem@__VIEM__/chains';
 
 __STATS_JS__
@@ -101,8 +102,32 @@ async function draw(seed, data) {
   $('art').src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
 }
 
-async function previewAddress(address) {
-  if (!isAddress(address)) return status('That is not a wallet address.');
+// Takes the last address-like thing in the field, so a new address pasted after an old one still works.
+// Accepts any letter case (no checksum check) and ENS names such as name.eth or name.base.eth.
+async function readAddress(raw) {
+  const text = raw.trim();
+  const hashes = text.match(/0x[0-9a-fA-F]{64}/g);
+  const addrs = text.replace(/0x[0-9a-fA-F]{64}/g, ' ').match(/0x[0-9a-fA-F]{40}(?![0-9a-fA-F])/g);
+  if (addrs) return { address: getAddress(addrs.at(-1).toLowerCase()) };
+  if (hashes) return { error: 'That looks like a transaction hash. Hash Haiku reads a wallet address: 0x followed by 40 characters.' };
+  const names = text.match(/[a-z0-9-]+(?:\.[a-z0-9-]+)*\.eth/gi);
+  if (names) {
+    status(`Looking up ${names.at(-1)}…`);
+    try {
+      const ens = createPublicClient({ chain: mainnet, transport: http() });
+      const address = await ens.getEnsAddress({ name: normalize(names.at(-1)) });
+      if (address) return { address };
+    } catch { /* fall through */ }
+    return { error: `${names.at(-1)} does not point to a wallet.` };
+  }
+  return { error: 'That is not a wallet address. Paste one that starts with 0x (40 characters after it), or a .eth name.' };
+}
+
+async function previewAddress(raw) {
+  const got = await readAddress(raw);
+  if (got.error) return status(got.error);
+  const address = got.address;
+  $('address').value = address;
   let data = 0n;
   if (CFG.project.stats) {
     status(`Reading ${CFG.statsYear} activity… (busy wallets can take up to 30 seconds)`);
@@ -130,7 +155,9 @@ async function lookupTx(hash) {
   }
   return null;
 }
-async function previewTx(hash) {
+async function previewTx(raw) {
+  const hash = (raw.match(/0x[0-9a-fA-F]{64}/g) || []).at(-1) || raw;
+  $('address').value = hash;
   if (!isTxHash(hash)) return status('Paste a transaction hash: 0x followed by 64 characters.');
   await draw(BigInt(hash), BigInt(hash));
   shownTx = null;
@@ -337,6 +364,8 @@ if (mode === 'perSeed') {
   $('previewBtn').onclick = () => previewTx($('address').value.trim()).catch((e) => status(`Preview failed: ${e.message}`));
   $('address').onkeydown = (e) => e.key === 'Enter' && $('previewBtn').click();
 }
+// Selecting the whole field on focus means a paste replaces the old value instead of appending to it.
+$('address').addEventListener('focus', () => $('address').select());
 if (mode === 'perMinter') {
   $('addressRow').hidden = false;
   $('previewBtn').onclick = () => previewAddress($('address').value.trim()).catch((e) => status(`Preview failed: ${e.message}`));
