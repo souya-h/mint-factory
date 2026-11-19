@@ -7,10 +7,13 @@
     "deployedAt": 1795017240
   },
   "hash-haiku": {
-    "edition": "0x50b887bbecefb41d280cc77893086e6c2150ae7c",
-    "renderer": "0xefde71873425dcce1d25ab4d2bced73fbf5b354f",
+    "edition": "0x00dc92a1dab82c51c0d37f2648f88546f2138bb8",
+    "renderer": "0x6caa05d6d4567e579de3ccd1ca52abda97834c01",
     "payout": "0xaD6290a180587C7371EdbFbC4A3EF68e1afDE5F7",
-    "block": 60896902,
-    "deployedAt": 1795101248
+    "block": 60897869,
+    "deployedAt": 1795101442,
+    "priceEth": "0.00001",
+    "priceStepEth": "0.00001",
+    "stepEvery": 2
   }
 }
