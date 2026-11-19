@@ -362,7 +362,7 @@ if (mode === 'perSeed') {
   $('address').placeholder = '0x… transaction hash';
   $('address').setAttribute('aria-label', 'Transaction hash');
   $('previewBtn').onclick = () => previewTx($('address').value.trim()).catch((e) => status(`Preview failed: ${e.message}`));
-  $('address').onkeydown = (e) => e.key === 'Enter' && $('previewBtn').click();
+  $('address').onkeydown = (e) => { if (e.key === 'Enter') $('previewBtn').click(); }; // a handler that returns false would block every other key
 }
 // Selecting the whole field on focus means a paste replaces the old value instead of appending to it.
 // Clicking a field that still shows the last previewed value selects it too (the focus event does not fire again).
@@ -374,7 +374,7 @@ $('address').addEventListener('click', () => {
 if (mode === 'perMinter') {
   $('addressRow').hidden = false;
   $('previewBtn').onclick = () => previewAddress($('address').value.trim()).catch((e) => status(`Preview failed: ${e.message}`));
-  $('address').onkeydown = (e) => e.key === 'Enter' && $('previewBtn').click();
+  $('address').onkeydown = (e) => { if (e.key === 'Enter') $('previewBtn').click(); }; // a handler that returns false would block every other key
 }
 if (mode === 'perMint') {
   $('againBtn').hidden = false;
