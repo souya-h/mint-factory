@@ -200,12 +200,13 @@ async function refreshSupply() {
     return;
   }
   try {
-    const [n, p] = await Promise.all([
+    const [n, p, g] = await Promise.all([
       pub.readContract({ ...edition, functionName: 'totalSupply' }),
       pub.readContract({ ...edition, functionName: 'currentPrice' }),
+      pub.readContract({ ...edition, functionName: 'gifted' }).catch(() => 0n),
     ]);
     $('supply').textContent = `${n} minted`;
-    $('price').textContent = priceLabel(p, n);
+    $('price').textContent = priceLabel(p, n - g); // gifts do not count toward the next price step
   } catch { /* supply is optional */ }
 }
 

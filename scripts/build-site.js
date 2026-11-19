@@ -17,7 +17,7 @@ const template = fs.readFileSync(path.join(ROOT, 'site', 'template.html'), 'utf8
 const statsJs = fs.readFileSync(path.join(ROOT, 'site', 'stats.js'), 'utf8').replace(/^export /gm, '');
 const viemVersion = require('viem/package.json').version;
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
-const USED = ['mint', 'totalSupply', 'daySeed', 'minted', 'currentPrice', 'seedUsed'];
+const USED = ['mint', 'totalSupply', 'gifted', 'daySeed', 'minted', 'currentPrice', 'seedUsed'];
 
 const dist = path.join(ROOT, 'dist');
 fs.rmSync(dist, { recursive: true, force: true });

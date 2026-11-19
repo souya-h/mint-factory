@@ -41,6 +41,7 @@ Okonomi Press（X: @okonomipress）のNFTレーベルを運営する。オーナ
 
 - ボットは毎時、@okonomipress へのメンションを読み、ウォレットアドレスか .eth の名前が書かれていれば、`config.json` の `replies.project`（初期値は Hash Haiku）の作品画像で返信する。上限は1日 `replies.maxPerDay` 件。
 - アドレスがないメンションには、短い定型文で返す（`lib/mentions.js` の `textReply`）。ミントや価格の質問には現在の状況を、それ以外には「アドレスか .eth を送れば一首詠む」という案内を返す。文面は日本語・英語を自動で切り替える。同じ相手にこの定型返信をするのは一度だけ。リンク入りのメンションには返さない。「stop」「やめて」などを含む相手は `replies.optOut` に記録して二度と返信しない。
+- 贈呈：`projects/*.json` の `giftLimit`（Hash Haiku は30）が設定されたプロジェクトでは、アドレスか .eth を送ってきた先着の人に作品を無料で贈る。販売開始前は `state.json` の `gifts.list` に予約され、デプロイ直後のボット実行で一斉に送られる。開始後は返信と同時に送る。1つのXアカウント・1つのウォレットにつき1回。贈呈分は価格の段階には数えない。日報には予約数と送信済み数を書く。`error` が残っている項目が続く場合は、Deployer のETH残高不足を疑って報告する。
 - 定型返信したものも含め、アドレスのないメンションは `replies.inbox` に残る（`auto: true` は返信済み）。もっと丁寧に答えるべきものがあれば、日報の「今日の交流」に返信案を入れる。
 - 日報の数字に、その日の返信数（`state.json` の `replies.count`）も書く。返信が上限に達する日が続いたら、上限を上げる提案をプルリクエストで出す（費用が増えるため承認が必要）。
 - `config.json` の `analytics.cloudflareToken` が入っていれば、ミントページの閲覧数を Cloudflare Web Analytics で数えている。

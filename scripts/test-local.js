@@ -122,6 +122,7 @@ for (const project of loadProjects()) {
   assert.match(textReply({ id: '2', text: '@okonomipress when is mint?' }, { project, live: false }).text, /not|isn't/i);
   assert.match(textReply({ id: '3', text: '@okonomipress いつミントできますか' }, { project, live: true }).text, /受付中/);
   assert.match(textReply({ id: '4', text: '@okonomipress love this' }, { project }).text, /\.eth/);
+  assert.match(textReply({ id: '7', text: '@okonomipress nice' }, { project: { ...project, giftLimit: 30 }, giftsLeft: 12 }).text, /12 left/);
   assert.equal(textReply({ id: '5', text: '@okonomipress love this' }, { project, invited: true }), null);
   assert.equal(textReply({ id: '6', text: '@okonomipress check https://spam.example' }, { project }), null);
   console.log('ok  mention parsing');
@@ -147,6 +148,32 @@ for (const project of loadProjects()) {
   console.log('ok  stepped price');
 }
 
+// Gifts: owner only, capped, one per wallet, free, and they do not move the price step.
+{
+  const base = loadProjects().find((p) => p.slug === 'hash-haiku');
+  const proj = { ...base, slug: 'gift-test', priceEth: '0.001', priceStepEth: '0.0005', stepEvery: 2, giftLimit: 2 };
+  const dep = await deployProject(proj, 'local');
+  const ed = { address: dep.edition, abi };
+  const owner = client.extend(walletActions);
+  const ownerAcc = privateKeyToAccount(KEY);
+  const gift = async (from, to) => client.waitForTransactionReceipt({ hash: await owner.writeContract({ account: from, ...ed, functionName: 'gift', args: [to, 0n] }) });
+  const A = '0x00000000000000000000000000000000000000a1', B = '0x00000000000000000000000000000000000000b2', C = '0x00000000000000000000000000000000000000c3';
+  await assert.rejects(gift(account, A), 'non-owner must not gift');
+  await gift(ownerAcc, A);
+  await assert.rejects(gift(ownerAcc, A), 'same wallet twice must revert');
+  await gift(ownerAcc, B);
+  await assert.rejects(gift(ownerAcc, C), 'gift limit must hold');
+  assert.equal((await client.readContract({ ...ed, functionName: 'ownerOf', args: [1n] })).toLowerCase(), A);
+  assert.equal(await client.readContract({ ...ed, functionName: 'seedOf', args: [1n] }), BigInt(A));
+  assert.equal(await client.readContract({ ...ed, functionName: 'currentPrice' }), parseEther('0.001'), 'gifts must not move the price');
+  await mint(dep.edition, 0n, parseEther('0.001'));
+  assert.equal(await client.getBalance({ address: dep.edition }), parseEther('0.001'));
+  const d = loadDeployments('local');
+  delete d['gift-test'];
+  fs.writeFileSync(path.join(ROOT, 'deployments', 'local.json'), JSON.stringify(d));
+  console.log('ok  gifts');
+}
+
 // Bot: first pass posts previews (dry run); a second pass right after must not post again.
 const runBot = () => execFileSync('node', ['bot/run.js'], { cwd: ROOT, env: process.env, encoding: 'utf8' });
 fs.rmSync(path.join(out, 'dryrun'), { recursive: true, force: true });
@@ -160,6 +187,23 @@ assert.equal(fs.readdirSync(path.join(out, 'dryrun')).filter((f) => f.endsWith('
 execFileSync('node', ['scripts/build-site.js'], { cwd: ROOT, env: process.env });
 assert.ok(fs.existsSync(path.join(ROOT, 'dist', 'hash-haiku', 'index.html')));
 console.log('ok  site build');
+
+// Gift queue: wallets reserved before launch are sent by the next bot run once the edition exists.
+{
+  const sf = path.join(ROOT, 'state.json');
+  const st = JSON.parse(fs.readFileSync(sf, 'utf8'));
+  const Q = ['0x00000000000000000000000000000000000000d4', '0x00000000000000000000000000000000000000e5'];
+  st.gifts = { list: Q.map((address, i) => ({ address, author: String(i), tweet: String(i) })) };
+  fs.writeFileSync(sf, JSON.stringify(st));
+  runBot();
+  const after = JSON.parse(fs.readFileSync(sf, 'utf8')).gifts.list;
+  assert.ok(after.every((x) => x.tx), 'queued gifts were not sent');
+  const hh = { address: loadDeployments('local')['hash-haiku'].edition, abi };
+  for (const a of Q) assert.equal(await client.readContract({ ...hh, functionName: 'minted', args: [a] }), true);
+  runBot(); // must not send again
+  assert.equal(await client.readContract({ ...hh, functionName: 'gifted' }), 2n);
+  console.log('ok  gift queue');
+}
 
 // Kill rule: pretend the projects went live 80 hours ago with too few mints.
 const deployments = loadDeployments('local');

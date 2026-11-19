@@ -54,17 +54,21 @@ function postDue(postCfg, lastPostAt) {
   return now - latest <= 3 * 3600 && lastPostAt < latest;
 }
 
-function fill(template, project, supply, price = 0n) {
+const giftsLeft = (p) => Math.max(0, (p.giftLimit || 0) - (state.gifts?.list || []).filter((x) => !x.skipped).length);
+
+function fill(template, project, supply, price = 0n, paid = supply) {
   const k = kouFor(new Date(now * 1000));
   return template
     .replaceAll('{kouKanji}', k.kanji)
     .replaceAll('{kouRomaji}', k.romaji)
     .replaceAll('{kouEnglish}', k.english)
     .replaceAll('{price}', formatEther(price))
-    .replaceAll('{nextStep}', String(project.stepEvery ? project.stepEvery - (Number(supply) % project.stepEvery) : ''))
+    .replaceAll('{nextStep}', String(project.stepEvery ? project.stepEvery - (Number(paid) % project.stepEvery) : ''))
     .replaceAll('{hoursLeft}', String(24 - new Date(now * 1000).getUTCHours()))
     .replaceAll('{date}', todayStr)
     .replaceAll('{supply}', String(supply))
+    .replaceAll('{giftLimit}', String(project.giftLimit || 0))
+    .replaceAll('{giftsLeft}', String(giftsLeft(project)))
     .replaceAll('{name}', project.name)
     .replaceAll('{handle}', cfg.handle || '');
 }
@@ -127,6 +131,7 @@ async function runProject(project) {
   }
 
   let supply = 0n;
+  let paid = 0n;
   let price = parseEther(project.priceEth);
   if (dep) {
     const edition = { address: dep.edition, abi: editionAbi };
@@ -137,8 +142,9 @@ async function runProject(project) {
 
     supply = await client.readContract({ ...edition, functionName: 'totalSupply' });
     row.supply = Number(supply);
+    paid = supply - (project.giftLimit ? await client.readContract({ ...edition, functionName: 'gifted' }) : 0n);
     row.revenue = formatEther(
-      revenueWei(supply, parseEther(project.priceEth), parseEther(project.priceStepEth || '0'), project.stepEvery || 0),
+      revenueWei(paid, parseEther(project.priceEth), parseEther(project.priceStepEth || '0'), project.stepEvery || 0),
     );
     price = await client.readContract({ ...edition, functionName: 'currentPrice' });
 
@@ -161,9 +167,9 @@ async function runProject(project) {
 
   // Before the sale opens, use the teaser wording so posts never promise a mint that is not live.
   const pool = !dep && project.post?.teaserTemplates?.length ? project.post.teaserTemplates : project.post?.templates || [];
-  const templates = pool.filter((t) => supply > 0n || !t.includes('{supply}'));
+  const templates = pool.filter((t) => (supply > 0n || !t.includes('{supply}')) && (giftsLeft(project) > 0 || !t.includes('{giftsLeft}')));
   if (templates.length && canPost() && postDue(project.post, ps.lastPostAt || 0)) {
-    await publish(project, ps, dep, fill(templates[(ps.postCount || 0) % templates.length], project, supply, price));
+    await publish(project, ps, dep, fill(templates[(ps.postCount || 0) % templates.length], project, supply, price, paid));
   }
   finish();
 }
@@ -178,6 +184,45 @@ for (const project of loadProjects()) {
 }
 
 // Replies: someone mentions @<handle> with a wallet address or .eth name, and gets their artwork back.
+// Gifts: the first `giftLimit` people who send a wallet get its token for free. Before the sale opens they are
+// queued and sent right after deployment; once it is open they are sent at once. One per X account and per wallet.
+const giftState = () => (state.gifts ??= { list: [] });
+
+async function reserveGift(project, dep, address, m) {
+  if (!project.giftLimit) return null;
+  const g = giftState();
+  const key = address.toLowerCase();
+  if (g.list.some((x) => x.author === m.author_id || x.address.toLowerCase() === key)) return null;
+  if (g.list.filter((x) => !x.skipped).length >= project.giftLimit) return null;
+  if (dep && (await client.readContract({ address: dep.edition, abi: editionAbi, functionName: 'minted', args: [address] }))) return null;
+  g.list.push({ address, author: m.author_id, tweet: m.id, at: new Date().toISOString() });
+  if (!dep) return 'reserved';
+  await deliverGifts(project, dep);
+  return g.list.find((x) => x.address === address)?.tx ? 'sent' : 'reserved';
+}
+
+async function deliverGifts(project, dep) {
+  if (!project.giftLimit || !dep || !wallet) return;
+  const edition = { address: dep.edition, abi: editionAbi };
+  for (const x of giftState().list.filter((x) => !x.tx && !x.skipped)) {
+    if (await client.readContract({ ...edition, functionName: 'minted', args: [x.address] })) {
+      x.skipped = 'already minted';
+      continue;
+    }
+    try {
+      const hash = await wallet.writeContract({ ...edition, functionName: 'gift', args: [x.address, 0n] });
+      const receipt = await client.waitForTransactionReceipt({ hash });
+      if (receipt.status !== 'success') throw new Error('reverted');
+      x.tx = hash;
+      delete x.error;
+      console.log(`gift sent to ${x.address}`);
+    } catch (e) {
+      x.error = (e.shortMessage || e.message).slice(0, 120); // retried next run
+      break;
+    }
+  }
+}
+
 async function answerMentions() {
   const rc = cfg.replies;
   if (!rc?.project || !xEnabled()) return;
@@ -202,7 +247,7 @@ async function answerMentions() {
     const target = parseTarget(m.text);
     if (!target) {
       const invited = (st.invited || []).includes(m.author_id);
-      const r = textReply(m, { project, live: !!dep, invited });
+      const r = textReply(m, { project, live: !!dep, invited, giftsLeft: giftsLeft(project) });
       if (r?.optOut) {
         st.optOut = [...(st.optOut || []), m.author_id];
         continue;
@@ -220,12 +265,23 @@ async function answerMentions() {
     if (!address) continue;
     const svg = await renderSvg(client, project, BigInt(address), 0n, dep);
     const who = target.name || shortAddress(address);
-    const tail = dep ? 'Yours to mint, link in bio.' : 'Mint opens soon.';
+    const gift = await reserveGift(project, dep, address, m);
+    let tail = dep ? 'Yours to mint, link in bio.' : 'Mint opens soon.';
+    if (gift === 'sent') tail = `It's now in this wallet, free: one of the first ${project.giftLimit}.`;
+    if (gift === 'reserved') tail = `One of the first ${project.giftLimit}: it will be sent to this wallet, free, when the mint opens.`;
     await reply({ text: `${project.name} for ${who}.\n\nEvery wallet has exactly one. ${tail}`, png: svgToPng(svg), inReplyTo: m.id });
     answered++;
     st.count++;
   }
   if (answered) console.log(`answered ${answered} mention(s)`);
+}
+
+try {
+  const giftProject = loadProjects().find((p) => p.slug === cfg.replies?.project);
+  const giftDep = giftProject && loadDeployments(chain)[giftProject.slug];
+  if (giftDep) await deliverGifts(giftProject, giftDep);
+} catch (e) {
+  console.error(`gifts: ${e.shortMessage || e.message}`);
 }
 
 try {

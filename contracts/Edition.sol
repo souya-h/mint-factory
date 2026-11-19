@@ -36,6 +36,7 @@ contract Edition is ERC721 {
         uint64 endTime; // 0 = no end
         uint32 maxSupply; // 0 = unlimited
         SeedMode seedMode;
+        uint32 giftLimit; // how many tokens the owner may send for free (0 = none)
     }
 
     error NotStarted();
@@ -47,6 +48,7 @@ contract Edition is ERC721 {
     error WrongMode();
     error SeedTaken();
     error WithdrawFailed();
+    error NoGiftsLeft();
 
     event Minted(address indexed to, uint256 indexed tokenId, uint256 seed, uint256 data);
 
@@ -60,9 +62,11 @@ contract Edition is ERC721 {
     uint64 public endTime;
     uint32 public immutable maxSupply;
     SeedMode public immutable seedMode;
+    uint32 public immutable giftLimit;
     string public description;
 
     uint256 public totalSupply;
+    uint256 public gifted;
     mapping(uint256 => uint256) public seedOf;
     mapping(uint256 => uint256) public dataOf;
     mapping(address => bool) public minted;
@@ -80,20 +84,34 @@ contract Edition is ERC721 {
         endTime = c.endTime;
         maxSupply = c.maxSupply;
         seedMode = c.seedMode;
+        giftLimit = c.giftLimit;
         description = c.description;
     }
 
     function mint(uint256 data) external payable returns (uint256 id) {
         if (block.timestamp < startTime) revert NotStarted();
         if (endTime != 0 && block.timestamp >= endTime) revert Ended();
-        if (maxSupply != 0 && totalSupply >= maxSupply) revert SoldOut();
         if (msg.value != currentPrice()) revert WrongPrice();
+        return _mintTo(msg.sender, data);
+    }
 
+    /// @notice Sends a token for free to `to`, as if `to` had minted it. Owner only, at most `giftLimit` times.
+    /// Gifts do not move the price: only paid mints count toward the next step.
+    function gift(address to, uint256 data) external returns (uint256 id) {
+        if (msg.sender != owner) revert NotOwner();
+        if (gifted >= giftLimit) revert NoGiftsLeft();
+        if (endTime != 0 && block.timestamp >= endTime) revert Ended();
+        gifted++;
+        return _mintTo(to, data);
+    }
+
+    function _mintTo(address to, uint256 data) internal returns (uint256 id) {
+        if (maxSupply != 0 && totalSupply >= maxSupply) revert SoldOut();
         uint256 seed;
         if (seedMode == SeedMode.PerMinter) {
-            if (minted[msg.sender]) revert AlreadyMinted();
-            minted[msg.sender] = true;
-            seed = uint160(msg.sender);
+            if (minted[to]) revert AlreadyMinted();
+            minted[to] = true;
+            seed = uint160(to);
         } else if (seedMode == SeedMode.PerSeed) {
             if (data == 0 || seedUsed[data]) revert SeedTaken();
             seedUsed[data] = true;
@@ -102,20 +120,20 @@ contract Edition is ERC721 {
             data = block.timestamp / 1 days;
             seed = _fixDaySeed(data);
         } else {
-            seed = uint256(keccak256(abi.encode(block.prevrandao, totalSupply, msg.sender)));
+            seed = uint256(keccak256(abi.encode(block.prevrandao, totalSupply, to)));
         }
 
         id = ++totalSupply;
         seedOf[id] = seed;
         dataOf[id] = data;
-        _mint(msg.sender, id);
-        emit Minted(msg.sender, id, seed, data);
+        _mint(to, id);
+        emit Minted(to, id, seed, data);
     }
 
-    /// @notice Price of the next mint. Starts at `price` and rises by `priceStep` every `stepEvery` mints.
+    /// @notice Price of the next mint. Starts at `price` and rises by `priceStep` every `stepEvery` paid mints.
     function currentPrice() public view returns (uint256) {
         if (priceStep == 0 || stepEvery == 0) return price;
-        return price + priceStep * (totalSupply / stepEvery);
+        return price + priceStep * ((totalSupply - gifted) / stepEvery);
     }
 
     /// @notice Fixes today's seed without minting (PerDay only). Anyone may call.
