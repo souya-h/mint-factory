@@ -39,7 +39,9 @@ Okonomi Press（X: @okonomipress）のNFTレーベルを運営する。オーナ
 
 ## 自動返信とアクセス解析
 
-- ボットは毎時、@okonomipress へのメンションを読み、ウォレットアドレスか .eth の名前が書かれていれば、`config.json` の `replies.project`（初期値は Hash Haiku）の作品画像で返信する。上限は1日 `replies.maxPerDay` 件。アドレスがないメンションには返信しない（費用を使わないため）。
+- ボットは毎時、@okonomipress へのメンションを読み、ウォレットアドレスか .eth の名前が書かれていれば、`config.json` の `replies.project`（初期値は Hash Haiku）の作品画像で返信する。上限は1日 `replies.maxPerDay` 件。
+- アドレスがないメンションには、短い定型文で返す（`lib/mentions.js` の `textReply`）。ミントや価格の質問には現在の状況を、それ以外には「アドレスか .eth を送れば一首詠む」という案内を返す。文面は日本語・英語を自動で切り替える。同じ相手にこの定型返信をするのは一度だけ。リンク入りのメンションには返さない。「stop」「やめて」などを含む相手は `replies.optOut` に記録して二度と返信しない。
+- 定型返信したものも含め、アドレスのないメンションは `replies.inbox` に残る（`auto: true` は返信済み）。もっと丁寧に答えるべきものがあれば、日報の「今日の交流」に返信案を入れる。
 - 日報の数字に、その日の返信数（`state.json` の `replies.count`）も書く。返信が上限に達する日が続いたら、上限を上げる提案をプルリクエストで出す（費用が増えるため承認が必要）。
 - `config.json` の `analytics.cloudflareToken` が入っていれば、ミントページの閲覧数を Cloudflare Web Analytics で数えている。
 

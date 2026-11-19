@@ -11,7 +11,7 @@ import {
 import { deployProject } from '../lib/deploy.js';
 import { renderSvg, svgToPng, sampleInput, today, isoDate } from '../lib/render.js';
 import { post, engagement, xEnabled, myUserId, mentions, reply, searchRecent } from '../lib/x.js';
-import { parseTarget, resolveName, shortAddress } from '../lib/mentions.js';
+import { parseTarget, resolveName, shortAddress, textReply } from '../lib/mentions.js';
 import { kouFor } from '../lib/kou.js';
 
 const MILESTONES = [1, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000, 25000, 50000, 100000];
@@ -198,10 +198,22 @@ async function answerMentions() {
   for (const m of found) {
     st.sinceId = m.id;
     if (m.author_id === st.userId || answered >= Math.min(left, rc.maxPerRun ?? 10)) continue;
+    if ((st.optOut || []).includes(m.author_id)) continue;
     const target = parseTarget(m.text);
     if (!target) {
-      // Nothing to draw. Keep it for the daily report, where a person can answer it with one tap.
-      st.inbox = [...(st.inbox || []), { id: m.id, text: m.text.slice(0, 280), at: m.created_at }].slice(-20);
+      const invited = (st.invited || []).includes(m.author_id);
+      const r = textReply(m, { project, live: !!dep, invited });
+      if (r?.optOut) {
+        st.optOut = [...(st.optOut || []), m.author_id];
+        continue;
+      }
+      // Kept for the daily report either way, so a person can follow up if it deserves more than a short answer.
+      st.inbox = [...(st.inbox || []), { id: m.id, text: m.text.slice(0, 280), at: m.created_at, auto: !!r }].slice(-20);
+      if (!r) continue;
+      await reply({ text: r.text, inReplyTo: m.id });
+      st.invited = [...(st.invited || []), m.author_id].slice(-500);
+      answered++;
+      st.count++;
       continue;
     }
     const address = target.address || (await resolveName(target.name));

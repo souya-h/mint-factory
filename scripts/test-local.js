@@ -115,6 +115,15 @@ for (const project of loadProjects()) {
   assert.deepEqual(parseTarget('@okonomipress jesse.base.eth'), { name: 'jesse.base.eth' });
   assert.equal(parseTarget('@okonomipress love this'), null);
   assert.equal(parseTarget('@okonomipress 0x1234'), null);
+  const { textReply } = await import('../lib/mentions.js');
+  const project = { name: 'Hash Haiku' };
+  assert.deepEqual(textReply({ id: '1', text: '@okonomipress stop' }, { project }), { optOut: true });
+  assert.deepEqual(textReply({ id: '1', text: '@okonomipress やめてください' }, { project }), { optOut: true });
+  assert.match(textReply({ id: '2', text: '@okonomipress when is mint?' }, { project, live: false }).text, /not|isn't/i);
+  assert.match(textReply({ id: '3', text: '@okonomipress いつミントできますか' }, { project, live: true }).text, /受付中/);
+  assert.match(textReply({ id: '4', text: '@okonomipress love this' }, { project }).text, /\.eth/);
+  assert.equal(textReply({ id: '5', text: '@okonomipress love this' }, { project, invited: true }), null);
+  assert.equal(textReply({ id: '6', text: '@okonomipress check https://spam.example' }, { project }), null);
   console.log('ok  mention parsing');
 }
 
