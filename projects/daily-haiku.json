@@ -38,7 +38,7 @@
   },
   "launch": {
     "short": "later",
-    "note": "Preview only. Mint opens later; the date will be posted on X first.",
+    "note": "Preview only. Mint opens later on Base mainnet; the date will be posted on X first.",
     "button": "Mint opens later"
   }
 }
