@@ -1,0 +1,35 @@
+name: testnet
+on:
+  workflow_dispatch:
+    inputs:
+      project:
+        description: "Project slug to put on Base Sepolia"
+        default: hash-haiku
+permissions:
+  contents: write
+  actions: write
+jobs:
+  testnet:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: node scripts/testnet.js "${{ inputs.project }}"
+        env:
+          CHAIN: baseSepolia
+          DEPLOYER_PRIVATE_KEY: ${{ secrets.DEPLOYER_PRIVATE_KEY }}
+          PAYOUT_ADDRESS: ${{ secrets.PAYOUT_ADDRESS }}
+          RPC_URL: ${{ secrets.RPC_URL }}
+      - name: Save the deployment and rebuild the site
+        run: |
+          git config user.name "okonomi-bot"
+          git config user.email "okonomi-bot@users.noreply.github.com"
+          git add deployments/baseSepolia.json
+          git diff --cached --quiet || (git commit -m "testnet: ${{ inputs.project }} on Base Sepolia" && git pull --rebase -q && git push)
+          gh workflow run pages.yml --ref main
+        env:
+          GH_TOKEN: ${{ github.token }}

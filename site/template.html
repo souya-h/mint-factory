@@ -34,6 +34,7 @@ __ANALYTICS__
 </head>
 <body>
 <main>
+  <p class="note" id="testBanner" hidden style="color:#ffb86b">TEST COPY on Base Sepolia. Test ETH only. Nothing here is the real sale.</p>
   <h1 id="name"></h1>
   <p id="desc"></p>
   <p class="note" id="launchNote" hidden></p>
@@ -344,6 +345,7 @@ function share() {
 
 $('name').textContent = CFG.project.name;
 $('desc').textContent = CFG.project.description;
+if (CFG.testnet) $('testBanner').hidden = false;
 if (CFG.author) {
   $('byline').textContent = CFG.author;
   $('byline').hidden = false;

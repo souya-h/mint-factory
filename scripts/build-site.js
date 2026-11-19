@@ -19,11 +19,13 @@ const viemVersion = require('viem/package.json').version;
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 const USED = ['mint', 'totalSupply', 'gifted', 'daySeed', 'minted', 'currentPrice', 'seedUsed'];
 
-const dist = path.join(ROOT, 'dist');
+// TESTNET=1 builds a labelled test copy (e.g. CHAIN=baseSepolia OUT_DIR=dist/test) that lists only deployed projects.
+const testnet = Boolean(process.env.TESTNET);
+const dist = path.join(ROOT, process.env.OUT_DIR || 'dist');
 fs.rmSync(dist, { recursive: true, force: true });
 fs.mkdirSync(dist, { recursive: true });
 
-const siteUrl = (cfg.siteUrl || '').replace(/\/?$/, '/');
+const siteUrl = (cfg.siteUrl || '').replace(/\/?$/, '/') + (testnet && cfg.siteUrl ? 'test/' : '');
 const client = publicClient(cfg.chain);
 // Optional page-view counting with Cloudflare Web Analytics. The token is public (it ships in the page).
 const token = cfg.analytics?.cloudflareToken;
@@ -48,6 +50,7 @@ const listed = [];
 for (const p of loadProjects()) {
   if (p.status === 'paused' || state.projects[p.slug]?.killed) continue;
   const dep = deployments[p.slug] || null;
+  if (testnet && !dep) continue;
   const pageCfg = {
     project: { slug: p.slug, name: p.name, description: p.description, seedMode: p.seedMode, priceEth: p.priceEth, priceStepEth: p.priceStepEth || '0', stepEvery: p.stepEvery || 0, stats: Boolean(p.stats), launch: p.launch || null, giftNote: p.giftLimit ? p.giftNote || '' : '' },
     chain: {
@@ -65,12 +68,13 @@ for (const p of loadProjects()) {
     statsYear: cfg.statsYear,
     handle: cfg.handle,
     author: cfg.author?.line || '',
+    testnet,
   };
   fs.mkdirSync(path.join(dist, p.slug), { recursive: true });
   const image = await card(p, dep);
   const html = template
     .replace('__OG_IMAGE__', image ? `<meta property="og:image" content="${image}">\n<meta name="twitter:image" content="${image}">` : '')
-    .replace('__ANALYTICS__', () => analytics)
+    .replace('__ANALYTICS__', () => (testnet ? '<meta name="robots" content="noindex">' : analytics))
     .replaceAll('__TITLE__', esc(p.name))
     .replaceAll('__DESC__', esc(p.description))
     .replace('__VIEM__', viemVersion)
@@ -83,9 +87,10 @@ for (const p of loadProjects()) {
 fs.writeFileSync(
   path.join(dist, 'index.html'),
   `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Okonomi Press</title>${analytics}<style>:root{color-scheme:dark}body{margin:0;background:#0c0d10;color:#e8e6e1;font:16px/1.5 ui-monospace,Menlo,Consolas,monospace}
+<title>Okonomi Press${testnet ? ' (testnet)' : ''}</title>${testnet ? '<meta name="robots" content="noindex">' : analytics}<style>:root{color-scheme:dark}body{margin:0;background:#0c0d10;color:#e8e6e1;font:16px/1.5 ui-monospace,Menlo,Consolas,monospace}
 main{max-width:480px;margin:0 auto;padding:32px 20px}a{color:#e8e6e1;display:block;padding:16px;border:1px solid #2c2f38;border-radius:6px;margin:0 0 12px;text-decoration:none}
 a:hover,a:focus-visible{border-color:#7fb3ff}span{color:#a9a69f;display:block;font-size:14px}</style></head><body><main>
+${testnet ? '<p style="color:#ffb86b">TEST COPY on Base Sepolia. Test ETH only. Nothing here is the real sale.</p>' : ''}
 ${listed.map((p) => `<a href="./${p.slug}/"><strong>${esc(p.name)}</strong><span>${esc(p.description)}</span>${!deployments[p.slug] && p.launch ? `<span>${esc(p.launch.note)}</span>` : ''}${!deployments[p.slug] && p.giftLimit && p.giftNote ? `<span>${esc(p.giftNote)}</span>` : ''}</a>`).join('\n')}
 ${cfg.author?.line ? `<p style="color:#a9a69f;font-size:14px">${esc(cfg.author.line)}</p>` : ''}
 </main></body></html>\n`,

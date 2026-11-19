@@ -25,6 +25,12 @@ jobs:
       - name: Japanese font for preview cards
         run: sudo apt-get install -y -qq fonts-noto-cjk >/dev/null
       - run: node scripts/build-site.js
+      - name: Test copy on Base Sepolia (only deployed projects)
+        run: node scripts/build-site.js
+        env:
+          CHAIN: baseSepolia
+          OUT_DIR: dist/test
+          TESTNET: "1"
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
