@@ -221,13 +221,13 @@ function priceLabel(p, minted) {
   if (!edition) {
     // Before launch: the planned starting price and the step rule, never a live price.
     let t = `Launch price ${formatEther(p)} ETH on ${CFG.chain.name}`;
-    if (step > 0n && every > 0) t += ` · +${formatEther(step)} ETH every ${every} paid mints (free gifts don't count)`;
+    if (step > 0n && every > 0) t += ` · +${formatEther(step)} ETH every ${every} ${CFG.project.gifts ? "paid mints (free gifts don't count)" : 'mints'}`;
     return t;
   }
   let t = `${formatEther(p)} ETH on ${CFG.chain.name}`;
   if (step > 0n && every > 0) {
     const left = every - (Number(minted) % every);
-    t += ` · rises to ${formatEther(p + step)} ETH in ${left} paid mint${left === 1 ? '' : 's'}`;
+    t += ` · rises to ${formatEther(p + step)} ETH in ${left} ${CFG.project.gifts ? 'paid ' : ''}mint${left === 1 ? '' : 's'}`;
   }
   return t;
 }
