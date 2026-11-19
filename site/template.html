@@ -26,6 +26,7 @@ __ANALYTICS__
   button:disabled { opacity: .45; cursor: default; }
   button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid #7fb3ff; outline-offset: 2px; }
   .meta { display: flex; justify-content: space-between; color: #a9a69f; margin: 0 0 12px; }
+  .note { color: #a9a69f; font-size: 14px; margin: 0 0 12px; }
   #status { min-height: 24px; margin: 12px 0; color: #a9a69f; overflow-wrap: anywhere; }
   a { color: #7fb3ff; }
   [hidden] { display: none !important; }
@@ -35,6 +36,8 @@ __ANALYTICS__
 <main>
   <h1 id="name"></h1>
   <p id="desc"></p>
+  <p class="note" id="launchNote" hidden></p>
+  <p class="note" id="giftNote" hidden></p>
 
   <div class="row" id="addressRow" hidden>
     <input id="address" placeholder="0x… wallet address" aria-label="Wallet address" autocomplete="off" spellcheck="false">
@@ -151,7 +154,7 @@ async function preview() {
       if (edition) seed = await pub.readContract({ ...edition, functionName: 'daySeed', args: [day] });
       if (seed === 0n) {
         seed = BigInt(keccak256(toHex(`${CFG.project.slug}:${day}`)));
-        status("Today's piece is fixed onchain at the start of the sale. This is a stand-in.");
+        status("Preview only: each day's poem is fixed onchain by the first mint once the sale opens, so the minted one will differ.");
       }
       await draw(seed, day);
     } else if (mode === 'perSeed') {
@@ -186,10 +189,16 @@ async function preview() {
 const step = parseEther(CFG.project.priceStepEth);
 const every = CFG.project.stepEvery;
 function priceLabel(p, minted) {
+  if (!edition) {
+    // Before launch: the planned starting price and the step rule, never a live price.
+    let t = `Launch price ${formatEther(p)} ETH on ${CFG.chain.name}`;
+    if (step > 0n && every > 0) t += ` · +${formatEther(step)} ETH every ${every} paid mints (free gifts don't count)`;
+    return t;
+  }
   let t = `${formatEther(p)} ETH on ${CFG.chain.name}`;
   if (step > 0n && every > 0) {
     const left = every - (Number(minted) % every);
-    t += ` · rises to ${formatEther(p + step)} ETH in ${left} mint${left === 1 ? '' : 's'}`;
+    t += ` · rises to ${formatEther(p + step)} ETH in ${left} paid mint${left === 1 ? '' : 's'}`;
   }
   return t;
 }
@@ -307,6 +316,15 @@ function share() {
 
 $('name').textContent = CFG.project.name;
 $('desc').textContent = CFG.project.description;
+if (!edition && CFG.project.launch) {
+  $('launchNote').textContent = CFG.project.launch.note;
+  $('launchNote').hidden = false;
+  $('mintBtn').textContent = CFG.project.launch.button;
+}
+if (!edition && CFG.project.giftNote) {
+  $('giftNote').textContent = CFG.project.giftNote;
+  $('giftNote').hidden = false;
+}
 if (mode === 'perSeed') {
   $('addressRow').hidden = false;
   $('address').placeholder = '0x… transaction hash';

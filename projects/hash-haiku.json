@@ -2,7 +2,7 @@
   "slug": "hash-haiku",
   "name": "Hash Haiku",
   "symbol": "HAIKU",
-  "description": "Your wallet address, read as a 5-7-5 poem. Every address has exactly one. One per wallet.",
+  "description": "Your wallet address, read as a 5-7-5 poem. One poem per wallet, drawn fully onchain on Base.",
   "renderer": "HashHaiku",
   "seedMode": "perMinter",
   "stats": false,
@@ -30,8 +30,8 @@
     ],
     "teaserTemplates": [
       "Every wallet has one poem.\n\nHash Haiku: your address, read as 5-7-5. Preview yours free, link in bio. 俳句",
-      "Send @okonomipress a wallet address or .eth name and get its haiku back. The first {giftLimit} are sent to that wallet free on launch day. {giftsLeft} left. 俳句",
-      "A haiku from a random wallet.\n\nWhat does yours say? Mint opens soon."
+      "Send @okonomipress a wallet address or .eth name and get its haiku back. The first {giftLimit} are sent to that wallet free on {launch}. {giftsLeft} left. 俳句",
+      "A haiku from a random wallet.\n\nWhat does yours say? Mint opens {launch}."
     ]
   },
   "teaser": {
@@ -43,5 +43,12 @@
     "afterHours": 72,
     "minMints": 20
   },
-  "giftLimit": 30
+  "giftLimit": 30,
+  "launch": {
+    "short": "Dec 1",
+    "note": "Preview yours free. Mint opens Dec 1, 21:00 JST / 7:00 AM ET, on Base.",
+    "button": "Mint opens Dec 1",
+    "noteJa": "ミント開始は12月1日 日本時間21時（米東部時間 午前7時）、Baseです。それまでもアドレスを送れば一首お見せします。"
+  },
+  "giftNote": "First 30 free: mention @okonomipress on X with your wallet address or .eth name. One per X account and per wallet. Reserved before launch: sent on Dec 1. After that, sent right away while any remain. The remaining count is posted on X."
 }

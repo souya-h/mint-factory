@@ -25,6 +25,7 @@ jobs:
           DEPLOYER_PRIVATE_KEY: ${{ secrets.DEPLOYER_PRIVATE_KEY }}
           PAYOUT_ADDRESS: ${{ secrets.PAYOUT_ADDRESS }}
           RPC_URL: ${{ secrets.RPC_URL }}
+          RPC_URL_BASE: ${{ secrets.RPC_URL_BASE }}
           X_API_KEY: ${{ secrets.X_API_KEY }}
           X_API_SECRET: ${{ secrets.X_API_SECRET }}
           X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}

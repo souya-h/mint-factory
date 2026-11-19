@@ -49,7 +49,7 @@ for (const p of loadProjects()) {
   if (p.status === 'paused' || state.projects[p.slug]?.killed) continue;
   const dep = deployments[p.slug] || null;
   const pageCfg = {
-    project: { slug: p.slug, name: p.name, description: p.description, seedMode: p.seedMode, priceEth: p.priceEth, priceStepEth: p.priceStepEth || '0', stepEvery: p.stepEvery || 0, stats: Boolean(p.stats) },
+    project: { slug: p.slug, name: p.name, description: p.description, seedMode: p.seedMode, priceEth: p.priceEth, priceStepEth: p.priceStepEth || '0', stepEvery: p.stepEvery || 0, stats: Boolean(p.stats), launch: p.launch || null, giftNote: p.giftLimit ? p.giftNote || '' : '' },
     chain: {
       id: chain.id,
       name: chain.name,
@@ -85,7 +85,7 @@ fs.writeFileSync(
 <title>Okonomi Press</title>${analytics}<style>:root{color-scheme:dark}body{margin:0;background:#0c0d10;color:#e8e6e1;font:16px/1.5 ui-monospace,Menlo,Consolas,monospace}
 main{max-width:480px;margin:0 auto;padding:32px 20px}a{color:#e8e6e1;display:block;padding:16px;border:1px solid #2c2f38;border-radius:6px;margin:0 0 12px;text-decoration:none}
 a:hover,a:focus-visible{border-color:#7fb3ff}span{color:#a9a69f;display:block;font-size:14px}</style></head><body><main>
-${listed.map((p) => `<a href="./${p.slug}/"><strong>${esc(p.name)}</strong><span>${esc(p.description)}</span></a>`).join('\n')}
+${listed.map((p) => `<a href="./${p.slug}/"><strong>${esc(p.name)}</strong><span>${esc(p.description)}</span>${!deployments[p.slug] && p.launch ? `<span>${esc(p.launch.note)}</span>` : ''}${!deployments[p.slug] && p.giftLimit && p.giftNote ? `<span>${esc(p.giftNote)}</span>` : ''}</a>`).join('\n')}
 </main></body></html>\n`,
 );
 console.log(`built ${listed.length} page(s) in dist/ for ${cfg.chain}`);

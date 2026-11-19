@@ -67,6 +67,7 @@ function fill(template, project, supply, price = 0n, paid = supply) {
     .replaceAll('{hoursLeft}', String(24 - new Date(now * 1000).getUTCHours()))
     .replaceAll('{date}', todayStr)
     .replaceAll('{supply}', String(supply))
+    .replaceAll('{launch}', project.launch?.short || 'soon')
     .replaceAll('{giftLimit}', String(project.giftLimit || 0))
     .replaceAll('{giftsLeft}', String(giftsLeft(project)))
     .replaceAll('{name}', project.name)
@@ -266,9 +267,9 @@ async function answerMentions() {
     const svg = await renderSvg(client, project, BigInt(address), 0n, dep);
     const who = target.name || shortAddress(address);
     const gift = await reserveGift(project, dep, address, m);
-    let tail = dep ? 'Yours to mint, link in bio.' : 'Mint opens soon.';
+    let tail = dep ? 'Yours to mint, link in bio.' : `Mint opens ${project.launch?.short || 'soon'}.`;
     if (gift === 'sent') tail = `It's now in this wallet, free: one of the first ${project.giftLimit}.`;
-    if (gift === 'reserved') tail = `One of the first ${project.giftLimit}: it will be sent to this wallet, free, when the mint opens.`;
+    if (gift === 'reserved') tail = `One of the first ${project.giftLimit}: it will be sent to this wallet, free, on ${project.launch?.short || 'launch day'}.`;
     await reply({ text: `${project.name} for ${who}.\n\nEvery wallet has exactly one. ${tail}`, png: svgToPng(svg), inReplyTo: m.id });
     answered++;
     st.count++;
