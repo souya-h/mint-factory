@@ -111,10 +111,13 @@ async function runProject(project) {
     const e = await engagement(ps.tweetIds);
     if (e !== null) ps.engagement = e;
     ps.engagementDay = todayStr;
+    ps.engagementAt = now;
   } else if (!xEnabled() && Number.isFinite(manual)) {
     ps.engagement = manual;
   }
-  const measured = xEnabled() || Number.isFinite(manual);
+  // With the API, a judgement needs a reading taken at least a day after the latest post; an older reading
+  // misses the newest posts and would kill an idea on numbers that were never measured.
+  const measured = xEnabled() ? (ps.engagementAt || 0) >= (ps.lastPostAt || 0) + 86_400 : Number.isFinite(manual);
 
   // Teaser phase: judge the idea on engagement before spending anything on deployment.
   if (!dep && project.status !== 'live' && project.teaser && measured && ps.postCount >= project.teaser.afterPosts) {

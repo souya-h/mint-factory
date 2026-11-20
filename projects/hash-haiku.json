@@ -34,11 +34,6 @@
       "A haiku from a random wallet.\n\nWhat does yours say? Mint opens {launch}."
     ]
   },
-  "teaser": {
-    "afterPosts": 6,
-    "promoteEngagement": 30,
-    "killEngagement": 5
-  },
   "kill": {
     "afterHours": 72,
     "minMints": 20

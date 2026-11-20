@@ -37,9 +37,7 @@
         "2123782827326034159"
       ],
       "engagement": 0,
-      "engagementDay": "2026-11-18",
-      "killed": true,
-      "killedReason": "teaser: engagement 0 < 5 after 6 posts"
+      "engagementDay": "2026-11-18"
     },
     "tx-haiku": {
       "postCount": 0,
