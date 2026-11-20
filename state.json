@@ -53,20 +53,21 @@
       "engagement": 0
     },
     "daily-haiku": {
-      "postCount": 1,
-      "lastPostAt": 1795054651,
+      "postCount": 2,
+      "lastPostAt": 1795141053,
       "lastSupply": 0,
       "tweetIds": [
-        "2123239219183174111"
+        "2123239219183174111",
+        "2123601614699176145"
       ],
       "engagement": 0,
       "engagementDay": "2026-11-19"
     }
   },
   "day": "2026-11-20",
-  "postsToday": 1,
+  "postsToday": 2,
   "replies": {
-    "sinceId": "2123419601463898382",
+    "sinceId": "2123586542375694370",
     "day": "2026-11-20",
     "count": 0,
     "userId": "2122782114831847424"
