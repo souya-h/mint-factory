@@ -1,19 +1,61 @@
 {
-  "updated": "2026-11-19T17:18:05.227Z",
+  "updated": "2026-11-20T00:20:17.274Z",
   "yesterday": {
-    "from": "2026-11-18",
-    "to": "2026-11-18",
-    "views": 0,
-    "visits": 0,
-    "pages": [],
-    "referrers": []
+    "from": "2026-11-19",
+    "to": "2026-11-19",
+    "views": 6,
+    "visits": 6,
+    "pages": [
+      {
+        "path": "/mint-factory/hash-haiku/",
+        "views": 4,
+        "visits": 4
+      },
+      {
+        "path": "/mint-factory/",
+        "views": 1,
+        "visits": 1
+      },
+      {
+        "path": "/mint-factory/daily-haiku/",
+        "views": 1,
+        "visits": 1
+      }
+    ],
+    "referrers": [
+      {
+        "host": "(direct)",
+        "views": 6
+      }
+    ]
   },
   "week": {
-    "from": "2026-11-12",
-    "to": "2026-11-18",
-    "views": 0,
-    "visits": 0,
-    "pages": [],
-    "referrers": []
+    "from": "2026-11-13",
+    "to": "2026-11-19",
+    "views": 6,
+    "visits": 6,
+    "pages": [
+      {
+        "path": "/mint-factory/hash-haiku/",
+        "views": 4,
+        "visits": 4
+      },
+      {
+        "path": "/mint-factory/",
+        "views": 1,
+        "visits": 1
+      },
+      {
+        "path": "/mint-factory/daily-haiku/",
+        "views": 1,
+        "visits": 1
+      }
+    ],
+    "referrers": [
+      {
+        "host": "(direct)",
+        "views": 6
+      }
+    ]
   }
 }
