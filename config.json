@@ -23,9 +23,9 @@
   "brief": {
     "hourUTC": 22,
     "queries": [
-      "(\"onchain art\" OR \"generative art\" OR genart) -giveaway -airdrop -whitelist -wl -payout -trading",
-      "(haiku OR 俳句) (onchain OR generative OR nft OR poetry) -giveaway",
-      "(ジェネラティブアート OR NFTアート OR クリプトアート) -プレゼント -エアドロ -AMA"
+      "(\"onchain art\" OR \"generative art\" OR genart) -giveaway -airdrop -whitelist -wl -payout -trading -lang:ja",
+      "(haiku OR poetry) (onchain OR generative OR nft) -giveaway -lang:ja",
+      "(\"art blocks\" OR fxhash OR \"onchain poetry\" OR \"code poetry\") -giveaway -airdrop -lang:ja"
     ],
     "maxReads": 30,
     "minFollowers": 1000,
