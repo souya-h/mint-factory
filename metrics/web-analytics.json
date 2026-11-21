@@ -1,37 +1,16 @@
 {
-  "updated": "2026-11-20T00:20:17.274Z",
+  "updated": "2026-11-21T00:17:45.095Z",
   "yesterday": {
-    "from": "2026-11-19",
-    "to": "2026-11-19",
-    "views": 6,
-    "visits": 6,
-    "pages": [
-      {
-        "path": "/mint-factory/hash-haiku/",
-        "views": 4,
-        "visits": 4
-      },
-      {
-        "path": "/mint-factory/",
-        "views": 1,
-        "visits": 1
-      },
-      {
-        "path": "/mint-factory/daily-haiku/",
-        "views": 1,
-        "visits": 1
-      }
-    ],
-    "referrers": [
-      {
-        "host": "(direct)",
-        "views": 6
-      }
-    ]
+    "from": "2026-11-20",
+    "to": "2026-11-20",
+    "views": 0,
+    "visits": 0,
+    "pages": [],
+    "referrers": []
   },
   "week": {
-    "from": "2026-11-13",
-    "to": "2026-11-19",
+    "from": "2026-11-14",
+    "to": "2026-11-20",
     "views": 6,
     "visits": 6,
     "pages": [
