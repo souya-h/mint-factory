@@ -75,10 +75,21 @@
   "day": "2026-11-22",
   "postsToday": 2,
   "replies": {
-    "sinceId": "2124145216500400267",
+    "sinceId": "2124485607821115636",
     "day": "2026-11-22",
-    "count": 0,
-    "userId": "2122782114831847424"
+    "count": 1,
+    "userId": "2122782114831847424",
+    "inbox": [
+      {
+        "id": "2124485607821115636",
+        "text": "@okonomipress thx! ...good old triangles for a change :)",
+        "at": "2026-11-22T12:50:14.000Z",
+        "auto": true
+      }
+    ],
+    "invited": [
+      "2925776009"
+    ]
   },
   "briefDay": "2026-11-21",
   "webStatsDay": "2026-11-22"
