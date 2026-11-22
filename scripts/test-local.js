@@ -121,8 +121,7 @@ for (const project of loadProjects()) {
   assert.deepEqual(textReply({ id: '1', text: '@okonomipress やめてください' }, { project }), { optOut: true });
   assert.match(textReply({ id: '2', text: '@okonomipress when is mint?' }, { project, live: false }).text, /not|isn't/i);
   assert.match(textReply({ id: '3', text: '@okonomipress いつミントできますか' }, { project, live: true }).text, /受付中/);
-  assert.match(textReply({ id: '4', text: '@okonomipress love this' }, { project }).text, /\.eth/);
-  assert.match(textReply({ id: '7', text: '@okonomipress nice' }, { project: { ...project, giftLimit: 30 }, giftsLeft: 12 }).text, /12 left/);
+  assert.equal(textReply({ id: '4', text: '@okonomipress love this' }, { project }), null, 'no canned pitch for a friendly remark');
   assert.equal(textReply({ id: '5', text: '@okonomipress love this' }, { project, invited: true }), null);
   assert.equal(textReply({ id: '6', text: '@okonomipress check https://spam.example' }, { project }), null);
   console.log('ok  mention parsing');

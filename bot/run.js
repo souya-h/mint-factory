@@ -252,7 +252,12 @@ async function answerMentions() {
     const target = parseTarget(m.text);
     if (!target) {
       const invited = (st.invited || []).includes(m.author_id);
-      const r = textReply(m, { project, live: !!dep, invited, giftsLeft: giftsLeft(project) });
+      // Automatic text answers only where the conversation is ours: a direct mention, or a reply under one of
+      // the bot's own posts. A thread that a person joined by hand (a reply to someone else's post) is theirs.
+      const own = new Set(Object.values(state.projects).flatMap((p) => p.tweetIds || []));
+      const ours = !m.conversation_id || m.conversation_id === m.id || own.has(m.conversation_id);
+      let r = textReply(m, { project, live: !!dep, invited, giftsLeft: giftsLeft(project) });
+      if (!ours && !r?.optOut) r = null;
       if (r?.optOut) {
         st.optOut = [...(st.optOut || []), m.author_id];
         continue;
