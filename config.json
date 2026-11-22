@@ -25,7 +25,7 @@
     "queries": [
       "(\"onchain art\" OR \"generative art\" OR genart) -giveaway -airdrop -whitelist -wl -payout -trading -lang:ja",
       "(haiku OR poetry) (onchain OR generative OR nft) -giveaway -lang:ja",
-      "(\"art blocks\" OR fxhash OR \"onchain poetry\" OR \"code poetry\") -giveaway -airdrop -lang:ja"
+      "(artblocks OR @artblocks_io OR fxhash OR \"onchain poetry\" OR \"code poetry\") -giveaway -airdrop -commission -lang:ja"
     ],
     "maxReads": 30,
     "minFollowers": 1000,
