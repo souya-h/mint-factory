@@ -73,12 +73,12 @@
       "engagementAt": 1795306651
     }
   },
-  "day": "2026-11-22",
-  "postsToday": 3,
+  "day": "2026-11-23",
+  "postsToday": 0,
   "replies": {
     "sinceId": "2124485607821115636",
-    "day": "2026-11-22",
-    "count": 1,
+    "day": "2026-11-23",
+    "count": 0,
     "userId": "2122782114831847424",
     "inbox": [
       {
@@ -93,5 +93,5 @@
     ]
   },
   "briefDay": "2026-11-22",
-  "webStatsDay": "2026-11-22"
+  "webStatsDay": "2026-11-23"
 }
