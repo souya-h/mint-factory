@@ -43,8 +43,8 @@
         "2124870115833311653"
       ],
       "engagement": 0,
-      "engagementDay": "2026-11-21",
-      "engagementAt": 1795220264
+      "engagementDay": "2026-11-24",
+      "engagementAt": 1795479459
     },
     "tx-haiku": {
       "postCount": 0,
@@ -76,11 +76,11 @@
       "engagementAt": 1795306651
     }
   },
-  "day": "2026-11-23",
-  "postsToday": 3,
+  "day": "2026-11-24",
+  "postsToday": 0,
   "replies": {
     "sinceId": "2124673669741895904",
-    "day": "2026-11-23",
+    "day": "2026-11-24",
     "count": 0,
     "userId": "2122782114831847424",
     "inbox": [
@@ -96,5 +96,5 @@
     ]
   },
   "briefDay": "2026-11-23",
-  "webStatsDay": "2026-11-23"
+  "webStatsDay": "2026-11-24"
 }
