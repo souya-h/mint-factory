@@ -166,6 +166,18 @@ for (const project of loadProjects()) {
   console.log('ok  own poem only');
 }
 
+// A planned launch can be deployed ahead: minting reverts until launchAt.
+{
+  const base = loadProjects().find((p) => p.slug === 'hash-haiku');
+  const proj = { ...base, slug: 'launch-test', priceEth: '0.001', launchAt: new Date(Date.now() + 86400e3).toISOString() };
+  const dep = await deployProject(proj, 'local');
+  await assert.rejects(mint(dep.edition, 0n, parseEther('0.001')), 'mint before launchAt must revert');
+  const d = loadDeployments('local');
+  delete d['launch-test'];
+  fs.writeFileSync(path.join(ROOT, 'deployments', 'local.json'), JSON.stringify(d));
+  console.log('ok  launch time');
+}
+
 // Gifts: owner only, capped, one per wallet, free, and they do not move the price step.
 {
   const base = loadProjects().find((p) => p.slug === 'hash-haiku');

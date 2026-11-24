@@ -94,7 +94,7 @@ async function runProject(project) {
     ps.killedReason = reason;
   };
   const finish = () => {
-    row.status = ps.killed ? 'killed' : project.status === 'paused' ? 'paused' : dep ? 'live' : 'teaser';
+    row.status = ps.killed ? 'killed' : project.status === 'paused' ? 'paused' : dep ? (project.launchAt && Date.now() < Date.parse(project.launchAt) ? 'deployed' : 'live') : 'teaser';
     row.note = ps.killedReason || (ps.candidate && !dep ? 'teaser passed: ready to go live' : '');
     row.posts = ps.postCount || 0;
     row.engagement = ps.engagement || 0;
@@ -135,6 +135,8 @@ async function runProject(project) {
     console.log(`deployed ${project.slug}: ${dep.edition}`);
   }
 
+  // Deployed ahead of a planned launch still counts as "not open" for posts, replies and gifts.
+  const open = Boolean(dep) && !(project.launchAt && Date.now() < Date.parse(project.launchAt));
   let supply = 0n;
   let paid = 0n;
   let price = parseEther(project.priceEth);
@@ -171,7 +173,7 @@ async function runProject(project) {
   }
 
   // Before the sale opens, use the teaser wording so posts never promise a mint that is not live.
-  const pool = !dep && project.post?.teaserTemplates?.length ? project.post.teaserTemplates : project.post?.templates || [];
+  const pool = !open && project.post?.teaserTemplates?.length ? project.post.teaserTemplates : project.post?.templates || [];
   const templates = pool.filter((t) => (supply > 0n || !t.includes('{supply}')) && (giftsLeft(project) > 0 || !t.includes('{giftsLeft}')));
   if (templates.length && canPost() && postDue(project.post, ps.lastPostAt || 0)) {
     await publish(project, ps, dep, fill(templates[(ps.postCount || 0) % templates.length], project, supply, price, paid));
@@ -201,13 +203,14 @@ async function reserveGift(project, dep, address, m) {
   if (g.list.filter((x) => !x.skipped).length >= project.giftLimit) return null;
   if (dep && (await client.readContract({ address: dep.edition, abi: editionAbi, functionName: 'minted', args: [address] }))) return null;
   g.list.push({ address, author: m.author_id, tweet: m.id, at: new Date().toISOString() });
-  if (!dep) return 'reserved';
+  if (!dep || (project.launchAt && Date.now() < Date.parse(project.launchAt))) return 'reserved';
   await deliverGifts(project, dep);
   return g.list.find((x) => x.address === address)?.tx ? 'sent' : 'reserved';
 }
 
 async function deliverGifts(project, dep) {
   if (!project.giftLimit || !dep || !wallet) return;
+  if (project.launchAt && Date.now() < Date.parse(project.launchAt)) return; // reserved gifts go out at launch
   const edition = { address: dep.edition, abi: editionAbi };
   for (const x of giftState().list.filter((x) => !x.tx && !x.skipped)) {
     if (await client.readContract({ ...edition, functionName: 'minted', args: [x.address] })) {
@@ -256,7 +259,7 @@ async function answerMentions() {
       // the bot's own posts. A thread that a person joined by hand (a reply to someone else's post) is theirs.
       const own = new Set(Object.values(state.projects).flatMap((p) => p.tweetIds || []));
       const ours = !m.conversation_id || m.conversation_id === m.id || own.has(m.conversation_id);
-      let r = textReply(m, { project, live: !!dep, invited, giftsLeft: giftsLeft(project) });
+      let r = textReply(m, { project, live: !!dep && !(project.launchAt && Date.now() < Date.parse(project.launchAt)), invited, giftsLeft: giftsLeft(project) });
       if (!ours && !r?.optOut) r = null;
       if (r?.optOut) {
         st.optOut = [...(st.optOut || []), m.author_id];
@@ -276,7 +279,8 @@ async function answerMentions() {
     const svg = await renderSvg(client, project, BigInt(address), 0n, dep);
     const who = target.name || shortAddress(address);
     const gift = await reserveGift(project, dep, address, m);
-    let tail = dep ? 'Yours to mint, link in bio.' : `Mint opens ${project.launch?.short || 'soon'}.`;
+    const isOpen = dep && !(project.launchAt && Date.now() < Date.parse(project.launchAt));
+    let tail = isOpen ? 'Yours to mint, link in bio.' : `Mint opens ${project.launch?.short || 'soon'}.`;
     if (gift === 'sent') tail = `It's now in this wallet, free: one of the first ${project.giftLimit}.`;
     if (gift === 'reserved') tail = `One of the first ${project.giftLimit}: it will be sent to this wallet, free, on ${project.launch?.short || 'launch day'}.`;
     await reply({ text: `${project.name} for ${who}.\n\nEvery wallet has exactly one. ${tail}`, png: svgToPng(svg), inReplyTo: m.id });

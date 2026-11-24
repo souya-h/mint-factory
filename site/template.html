@@ -79,6 +79,8 @@ const chain = {
 };
 const pub = createPublicClient({ chain, transport: http(CFG.chain.rpc) });
 const edition = CFG.deployment && { address: CFG.deployment.edition, abi: CFG.editionAbi };
+// Deployed ahead of a planned launch: show it as not open yet until launchAt.
+const notYet = Boolean(CFG.project.launchAt) && Date.now() < Date.parse(CFG.project.launchAt);
 let shown = null; // address currently drawn (perMinter)
 
 function status(text, link) {
@@ -218,7 +220,7 @@ async function preview() {
 const step = parseEther(CFG.project.priceStepEth);
 const every = CFG.project.stepEvery;
 function priceLabel(p, minted) {
-  if (!edition) {
+  if (!edition || notYet) {
     // Before launch: the planned starting price and the step rule, never a live price.
     let t = `Launch price ${formatEther(p)} ETH on ${CFG.chain.name}`;
     if (step > 0n && every > 0) t += ` · +${formatEther(step)} ETH every ${every} ${CFG.project.gifts ? "paid mints (free gifts don't count)" : 'mints'}`;
@@ -233,7 +235,7 @@ function priceLabel(p, minted) {
 }
 
 async function refreshSupply() {
-  if (!edition) {
+  if (!edition || notYet) {
     $('price').textContent = priceLabel(parseEther(CFG.project.priceEth), 0);
     return;
   }
@@ -360,12 +362,12 @@ if (CFG.author) {
   $('byline').textContent = CFG.author;
   $('byline').hidden = false;
 }
-if (!edition && CFG.project.launch) {
+if ((!edition || notYet) && CFG.project.launch) {
   $('launchNote').textContent = CFG.project.launch.note;
   $('launchNote').hidden = false;
   $('mintBtn').textContent = CFG.project.launch.button;
 }
-if (!edition && CFG.project.giftNote) {
+if ((!edition || notYet) && CFG.project.giftNote) {
   $('giftNote').textContent = CFG.project.giftNote;
   $('giftNote').hidden = false;
 }
@@ -392,10 +394,14 @@ if (mode === 'perMint') {
   $('againBtn').hidden = false;
   $('againBtn').onclick = preview;
 }
-if (edition) {
+if (edition && !notYet) {
   $('mintBtn').disabled = false;
   $('mintBtn').textContent = 'Mint';
   $('mintBtn').onclick = mint;
+} else if (edition && notYet) {
+  // Reload the page by itself at launch so the button turns on without a manual refresh.
+  const wait = Date.parse(CFG.project.launchAt) - Date.now() + 2000;
+  if (wait < 2 ** 31 - 1) setTimeout(() => location.reload(), wait);
 }
 $('saveBtn').onclick = save;
 $('shareBtn').onclick = share;
