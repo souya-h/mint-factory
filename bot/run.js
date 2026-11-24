@@ -95,7 +95,7 @@ async function runProject(project) {
   };
   const finish = () => {
     row.status = ps.killed ? 'killed' : project.status === 'paused' ? 'paused' : dep ? (project.launchAt && Date.now() < Date.parse(project.launchAt) ? 'deployed' : 'live') : 'teaser';
-    row.note = ps.killedReason || (ps.candidate && !dep ? 'teaser passed: ready to go live' : '');
+    row.note = ps.killedReason || (ps.deployError ? `deploy failed: ${ps.deployError}` : '') || (ps.candidate && !dep ? 'teaser passed: ready to go live' : '');
     row.posts = ps.postCount || 0;
     row.engagement = ps.engagement || 0;
     rows.push(row);
@@ -131,8 +131,15 @@ async function runProject(project) {
   }
 
   if (!dep && (project.status === 'live' || ps.promoted) && wallet) {
-    dep = await deployProject(project, chain);
-    console.log(`deployed ${project.slug}: ${dep.edition}`);
+    try {
+      dep = await deployProject(project, chain);
+      console.log(`deployed ${project.slug}: ${dep.edition}`);
+      delete ps.deployError;
+    } catch (e) {
+      // Most often the deployer has no ETH yet. Keep posting as before and try again next run.
+      ps.deployError = (e.shortMessage || e.message).slice(0, 160);
+      console.error(`deploy ${project.slug}: ${ps.deployError}`);
+    }
   }
 
   // Deployed ahead of a planned launch still counts as "not open" for posts, replies and gifts.
