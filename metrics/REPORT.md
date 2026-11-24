@@ -1,6 +1,6 @@
 # Report
 
-Updated 2026-11-24T09:17:36.983Z (chain: base, posts today: 2/6)
+Updated 2026-11-24T10:17:29.474Z (chain: base, posts today: 2/6)
 
 | project | status | mints | revenue (ETH) | posts | engagement | note |
 |---|---|---|---|---|---|---|
