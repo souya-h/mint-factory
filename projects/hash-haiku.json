@@ -32,6 +32,17 @@
       "Every wallet has one poem.\n\nHash Haiku: your address, read as 5-7-5. Preview yours free, link in bio. 俳句",
       "Send @okonomipress a wallet address or .eth name and get its haiku back. The first {giftLimit} are sent to that wallet free on {launch}. {giftsLeft} left. 俳句",
       "A haiku from a random wallet.\n\nWhat does yours say? Mint opens {launch}."
+    ],
+    "announcements": [
+      {
+        "at": "2026-12-01T12:00:00Z",
+        "text": "Hash Haiku is open. Every wallet reads as exactly one 5-7-5 poem, drawn fully onchain on Base. {price} ETH, one per wallet. Link in bio. 俳句"
+      },
+      {
+        "at": "2026-12-01T17:00:00Z",
+        "text": "Hash Haiku is live on Base: your wallet address, read as a 5-7-5 poem. One per wallet, {price} ETH. {giftsLeft} free ones left for anyone who mentions @okonomipress with an address or .eth name. 俳句",
+        "textNoGifts": "Hash Haiku is live on Base: your wallet address, read as a 5-7-5 poem. One per wallet, {price} ETH. Link in bio. 俳句"
+      }
     ]
   },
   "kill": {

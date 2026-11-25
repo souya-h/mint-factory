@@ -182,6 +182,17 @@ async function runProject(project) {
   // Before the sale opens, use the teaser wording so posts never promise a mint that is not live.
   const pool = !open && project.post?.teaserTemplates?.length ? project.post.teaserTemplates : project.post?.templates || [];
   const templates = pool.filter((t) => (supply > 0n || !t.includes('{supply}')) && (giftsLeft(project) > 0 || !t.includes('{giftsLeft}')));
+  // One-off announcements at fixed times (e.g. launch, then again at US midday), within 3 hours of `at`.
+  const due = (project.post?.announcements || []).find((a) => {
+    const at = Math.floor(Date.parse(a.at) / 1000);
+    return now >= at && now - at <= 3 * 3600 && !(ps.announced || []).includes(a.at);
+  });
+  if (due && canPost()) {
+    const text = giftsLeft(project) > 0 || !due.text.includes('{giftsLeft}') ? due.text : due.textNoGifts || due.text.replace(/[^.]*\{giftsLeft\}[^.]*\.\s*/, '');
+    await publish(project, ps, dep, fill(text, project, supply, price, paid));
+    ps.announced = [...(ps.announced || []), due.at];
+    return finish();
+  }
   if (templates.length && canPost() && postDue(project.post, ps.lastPostAt || 0)) {
     await publish(project, ps, dep, fill(templates[(ps.postCount || 0) % templates.length], project, supply, price, paid));
   }
