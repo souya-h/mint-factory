@@ -1,11 +1,11 @@
 # Report
 
-Updated 2026-11-25T01:17:30.691Z (chain: base, posts today: 1/6)
+Updated 2026-11-25T02:17:38.992Z (chain: base, posts today: 2/6)
 
 | project | status | mints | revenue (ETH) | posts | engagement | note |
 |---|---|---|---|---|---|---|
 | daily-block | paused | 0 | 0 | 3 | 0 |  |
-| daily-haiku | teaser | 0 | 0 | 6 | 0 |  |
+| daily-haiku | teaser | 0 | 0 | 7 | 0 |  |
 | hash-haiku | teaser | 0 | 0 | 15 | 0 |  |
 | onchain-2026 | paused | 0 | 0 | 3 | 0 |  |
 | testnet-check | paused | 0 | 0 | 0 | 0 |  |
