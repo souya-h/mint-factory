@@ -1,1 +1,12 @@
-{}
+{
+  "hash-haiku": {
+    "edition": "0x6e58fc78d803a41e9640a5bca225ad2874bae408",
+    "renderer": "0x72f43b4af084c855b2b1379fed824cce27d8181c",
+    "payout": "0xaD6290a180587C7371EdbFbC4A3EF68e1afDE5F7",
+    "block": 62147454,
+    "deployedAt": 1795619865,
+    "priceEth": "0.0016",
+    "priceStepEth": "0.00053",
+    "stepEvery": 100
+  }
+}
