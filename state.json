@@ -75,15 +75,15 @@
         "2125051174776647756"
       ],
       "engagement": 0,
-      "engagementDay": "2026-11-22",
-      "engagementAt": 1795306651
+      "engagementDay": "2026-11-25",
+      "engagementAt": 1795565856
     }
   },
-  "day": "2026-11-24",
-  "postsToday": 3,
+  "day": "2026-11-25",
+  "postsToday": 0,
   "replies": {
     "sinceId": "2125232447935701296",
-    "day": "2026-11-24",
+    "day": "2026-11-25",
     "count": 0,
     "userId": "2122782114831847424",
     "inbox": [
@@ -99,5 +99,5 @@
     ]
   },
   "briefDay": "2026-11-24",
-  "webStatsDay": "2026-11-24"
+  "webStatsDay": "2026-11-25"
 }
