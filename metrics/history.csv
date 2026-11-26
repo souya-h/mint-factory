@@ -1151,3 +1151,9 @@ ts,slug,status,supply,revenueEth,posts,engagement
 2026-11-26T07:17:46.512Z,onchain-2026,paused,0,0,3,0
 2026-11-26T07:17:46.512Z,testnet-check,paused,0,0,0,0
 2026-11-26T07:17:46.512Z,tx-haiku,paused,0,0,0,0
+2026-11-26T08:17:39.212Z,daily-block,paused,0,0,3,0
+2026-11-26T08:17:39.212Z,daily-haiku,teaser,0,0,8,0
+2026-11-26T08:17:39.212Z,hash-haiku,deployed,0,0,17,0
+2026-11-26T08:17:39.212Z,onchain-2026,paused,0,0,3,0
+2026-11-26T08:17:39.212Z,testnet-check,paused,0,0,0,0
+2026-11-26T08:17:39.212Z,tx-haiku,paused,0,0,0,0
